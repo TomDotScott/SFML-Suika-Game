@@ -69,6 +69,7 @@ public class SuikaGame : Project
         // This sucks. Maybe a better data structure would work but I am fed up with Sharpmake
         var sfmlDependencies = new Dictionary<SFML_Dependency, List<SFML_Dependency>>
         {
+            { new("sfml-main", true), new List<SFML_Dependency>() },
             { new("sfml-graphics", true), new List<SFML_Dependency> { new("sfml-window", true), new("sfml-system", true), new("opengl32"), new("freetype") } },
             { new("sfml-window", true), new List<SFML_Dependency>{ new("sfml-system", true), new("opengl32"), new("winmm"), new("gdi32") } },
             { new("sfml-audio", true), new List<SFML_Dependency>{ new("sfml-system", true), new("flac"), new("vorbisenc"), new("vorbisfile"), new("vorbis"), new("ogg") } },
@@ -86,9 +87,18 @@ public class SuikaGame : Project
             }
         }
 
-        conf.Options.Add(target.Optimization == Optimization.Debug
-            ? Options.Vc.Compiler.RuntimeLibrary.MultiThreadedDebugDLL
-            : Options.Vc.Compiler.RuntimeLibrary.MultiThreadedDLL);
+        if (target.Optimization == Optimization.Debug)
+        {
+            conf.Options.Add(Options.Vc.Compiler.RuntimeLibrary.MultiThreadedDebugDLL);
+
+            conf.Options.Add(Sharpmake.Options.Vc.Linker.SubSystem.Console);
+        }
+        else
+        {
+            conf.Options.Add(Options.Vc.Compiler.RuntimeLibrary.MultiThreadedDLL);
+
+            conf.Options.Add(Sharpmake.Options.Vc.Linker.SubSystem.Windows);
+        }
 
         conf.Options.Add(Options.Vc.Compiler.Exceptions.Enable);
 
