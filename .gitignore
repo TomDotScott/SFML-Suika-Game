@@ -49,3 +49,4 @@ desktop.ini
 
 # Ignore any additional custom directories or files
 Properties/launchSettings.json
+obj/project.assets.json
