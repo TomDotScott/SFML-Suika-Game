@@ -92,17 +92,33 @@ public class SuikaGame : Project
             conf.Options.Add(Options.Vc.Compiler.RuntimeLibrary.MultiThreadedDebugDLL);
 
             conf.Options.Add(Sharpmake.Options.Vc.Linker.SubSystem.Console);
+
+            conf.Defines.Add("BUILD_DEBUG");
         }
         else
         {
             conf.Options.Add(Options.Vc.Compiler.RuntimeLibrary.MultiThreadedDLL);
 
             conf.Options.Add(Sharpmake.Options.Vc.Linker.SubSystem.Windows);
+
+            if (target.Optimization == Optimization.Release)
+            {
+                conf.Defines.Add("BUILD_RELEASE");
+            }
+            else if (target.Optimization == Optimization.Retail)
+            {
+                conf.Defines.Add("BUILD_MASTER");
+            }
         }
 
         conf.Options.Add(Options.Vc.Compiler.Exceptions.Enable);
 
         conf.Defines.Add("SFML_STATIC");
+
+        conf.VcxprojUserFile = new Configuration.VcxprojUserFileSettings
+        {
+            LocalDebuggerWorkingDirectory = Path.Combine(Constants.PROJECT_ROOT, "data")
+        };
     }
 }
 
