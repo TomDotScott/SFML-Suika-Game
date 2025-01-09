@@ -5,8 +5,10 @@
 
 #include "Engine/Globals.h"
 #include "Engine/Timer.h"
+#include "Game/Fruit.h"
 
 GraphicSettings GRAPHIC_SETTINGS{};
+RandomRangeGenerator RNG = RandomRangeGenerator(0.0, 1.0);
 
 int main(int argc, char** argv)
 {
@@ -28,14 +30,16 @@ int main(int argc, char** argv)
 
 	window.setVerticalSyncEnabled(true);
 
-	sf::CircleShape shape(100.f);
+	std::vector<Fruit> fruitCollection;
 
-	RandomRangeGenerator rng(0.0, 1.0);
-	sf::Vector2f dir{ static_cast<float>(rng.Next()), static_cast<float>(rng.Next()) };
-	shape.setFillColor(sf::Color::Green);
+	constexpr int amountOfFruit = 100;
 
-	shape.setOrigin({ shape.getGlobalBounds().size.x / 2.f, shape.getGlobalBounds().size.y / 2.f });
-	shape.setPosition(static_cast<sf::Vector2f>(GRAPHIC_SETTINGS.GetScreenSize()) / 2.f);
+	fruitCollection.reserve(amountOfFruit);
+
+	for (int i = 0; i < amountOfFruit; ++i)
+	{
+		fruitCollection.emplace_back(static_cast<Fruit::eFruitType>(i), static_cast<sf::Vector2f>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre));
+	}
 
 
 #if !MASTER_BUILD
@@ -56,39 +60,19 @@ int main(int argc, char** argv)
 			}
 		}
 
-		window.clear();
 		Timer::Get().Update();
 
-		constexpr float speed = 500.f;
-
-		shape.setPosition(shape.getPosition() + dir.normalized() * speed * Timer::Get().DeltaTime());
-
-		const auto& newPosition = shape.getPosition();
-
-		if (newPosition.x - shape.getRadius() < 0)
+		for (auto& fruit : fruitCollection)
 		{
-			shape.setPosition({ shape.getRadius(), shape.getPosition().y });
-			dir.x = -dir.x;
+			fruit.Update();
 		}
 
-		if (newPosition.x + shape.getRadius() > static_cast<float>(GRAPHIC_SETTINGS.GetScreenSize().x))
-		{
-			shape.setPosition({ static_cast<float>(GRAPHIC_SETTINGS.GetScreenSize().x) - shape.getRadius(), shape.getPosition().y });
-			dir.x = -dir.x;
-		}
+		window.clear();
 
-		if (newPosition.y - shape.getRadius() < 0)
+		for (const auto& fruit : fruitCollection)
 		{
-			shape.setPosition({ shape.getPosition().x, shape.getRadius() });
-			dir.y = -dir.y;
+			fruit.Render(window);
 		}
-		if (newPosition.y + shape.getRadius() > static_cast<float>(GRAPHIC_SETTINGS.GetScreenSize().y))
-		{
-			shape.setPosition({ shape.getPosition().x, static_cast<float>(GRAPHIC_SETTINGS.GetScreenSize().y) - shape.getRadius() });
-			dir.y = -dir.y;
-		}
-
-		window.draw(shape);
 
 #if !BUILD_MASTER
 		if (++frameCount % 2 == 0)

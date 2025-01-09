@@ -6,12 +6,19 @@
 class GraphicSettings
 {
 public:
-	void SetScreenSize(const sf::Vector2u& screenSize) { m_screenSize = screenSize; }
-	const sf::Vector2u& GetScreenSize() const { return m_screenSize; }
-	sf::Vector2u GetScreenSize() { return m_screenSize; }
+	struct ScreenDetails
+	{
+		sf::Vector2u m_ScreenSize;
+		sf::Vector2u m_ScreenCentre;
+	};
+
+	void SetScreenSize(const sf::Vector2u& screenSize) { m_screenDetails = { screenSize, screenSize / 2u }; }
+
+	const ScreenDetails& GetScreenDetails() const { return m_screenDetails; }
+	ScreenDetails GetScreenDetails() { return m_screenDetails; }
 
 private:
-	sf::Vector2u m_screenSize;
+	ScreenDetails m_screenDetails;
 };
 
 class RandomRangeGenerator
@@ -28,5 +35,6 @@ private:
 };
 
 extern GraphicSettings GRAPHIC_SETTINGS;
+extern RandomRangeGenerator RNG;
 
 #endif
