@@ -16,6 +16,7 @@ public:
 
 	const sf::Vector2f& GetPosition() const { return m_position; }
 	sf::Vector2f GetPosition() { return m_position; }
+	void SetPosition(const sf::Vector2f& position) { m_position = position; }
 
 protected:
 	sf::Vector2f m_position;

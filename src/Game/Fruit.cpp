@@ -6,35 +6,33 @@
 
 Fruit::Fruit(const eFruitType type, const sf::Vector2f& position) :
 	GameObject(position),
-	m_direction(static_cast<float>(RNG.Next()), static_cast<float>(RNG.Next()))
+	m_stationary(false)
 {
-	m_direction = m_direction.normalized();
-
 	float radius = 0.0f;
 
 	// TODO: Make better
 	switch (type)
 	{
 	case eFruitType::Cherry:
-		radius = 5;
-		break;
-	case eFruitType::Strawberry:
 		radius = 10;
 		break;
-	case eFruitType::Grapes:
-		radius = 15;
-		break;
-	case eFruitType::Dekopon:
+	case eFruitType::Strawberry:
 		radius = 20;
 		break;
-	case eFruitType::Orange:
+	case eFruitType::Grapes:
+		radius = 25;
+		break;
+	case eFruitType::Dekopon:
 		radius = 30;
 		break;
-	case eFruitType::Apple:
+	case eFruitType::Orange:
 		radius = 40;
 		break;
-	case eFruitType::Pear:
+	case eFruitType::Apple:
 		radius = 50;
+		break;
+	case eFruitType::Pear:
+		radius = 55;
 		break;
 	case eFruitType::Peach:
 		radius = 60;
@@ -50,6 +48,8 @@ Fruit::Fruit(const eFruitType type, const sf::Vector2f& position) :
 		break;
 	}
 
+	m_mass = radius * 10.f;
+
 	m_shape.setRadius(radius);
 
 	m_shape.setFillColor(GetColour(type));
@@ -63,40 +63,61 @@ Fruit::Fruit(const eFruitType type, const sf::Vector2f& position) :
 	m_drawables.emplace_back(&m_shape);
 }
 
-Fruit::~Fruit()
-{
-}
 
 void Fruit::Update()
 {
-	constexpr float speed = 500.f;
-
-	m_position = m_position + m_direction * speed * Timer::Get().DeltaTime();
-
-	if (m_position.x - m_shape.getRadius() < 0)
+	if (!m_stationary)
 	{
-		m_shape.setPosition({ m_shape.getRadius(), m_shape.getPosition().y });
-		m_direction.x = -m_direction.x;
+		Move();
 	}
 
-	if (m_position.x + m_shape.getRadius() > static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenSize.x))
-	{
-		m_shape.setPosition({ static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenSize.x) - m_shape.getRadius(), m_shape.getPosition().y });
-		m_direction.x = -m_direction.x;
-	}
-
-	if (m_position.y - m_shape.getRadius() < 0)
-	{
-		m_shape.setPosition({ m_shape.getPosition().x, m_shape.getRadius() });
-		m_direction.y = -m_direction.y;
-	}
-	if (m_position.y + m_shape.getRadius() > static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenSize.y))
-	{
-		m_shape.setPosition({ m_shape.getPosition().x, static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenSize.y) - m_shape.getRadius() });
-		m_direction.y = -m_direction.y;
-	}
+	m_acceleration = VECTOR2F_ZERO;
 
 	m_shape.setPosition(m_position);
+}
+
+float Fruit::GetRadius() const
+{
+	return m_shape.getRadius();
+}
+
+void Fruit::ApplyForce(const sf::Vector2f& force)
+{
+	m_acceleration += force / m_mass;
+}
+
+sf::Vector2f Fruit::GetVelocity() const
+{
+	return m_velocity;
+}
+
+void Fruit::SetVelocity(const sf::Vector2f velocity)
+{
+	m_stationary = velocity.length() <= 10.f;
+
+	m_velocity = velocity;
+}
+
+float Fruit::GetMass() const
+{
+	return m_mass;
+}
+
+sf::Vector2f Fruit::GetAcceleration() const
+{
+	return m_acceleration;
+}
+
+bool Fruit::IsStationary() const
+{
+	return m_stationary;
+}
+
+void Fruit::Move()
+{
+	m_velocity -= m_acceleration;
+
+	m_position -= m_velocity /** Timer::Get().DeltaTime()*/;
 }
 
 sf::Color Fruit::GetColour(const eFruitType type)
