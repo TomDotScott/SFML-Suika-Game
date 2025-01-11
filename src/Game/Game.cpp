@@ -150,10 +150,10 @@ bool Game::CircleLineCollision(Fruit& fruit, const Boundary& boundary)
 	fruit.SetVelocity(reflectedVelocity * Boundary::m_Damping);
 
 	// Fix any penetration
-	sf::Vector2f distanceVector = fruit.GetPosition() - closestPoint;
-	float distanceSquared = distanceVector.lengthSquared();
-	sf::Vector2f collisionNormal = distanceVector.normalized();
-	float penetrationDepth = fruit.GetRadius() - std::sqrt(distanceSquared);
+	const sf::Vector2f distanceVector = fruit.GetPosition() - closestPoint;
+	const float distanceSquared = distanceVector.lengthSquared();
+	const sf::Vector2f collisionNormal = distanceVector.normalized();
+	const float penetrationDepth = fruit.GetRadius() - std::sqrt(distanceSquared);
 
 	printf("PENETRATION DEPTH: %.2f\n", penetrationDepth);
 
