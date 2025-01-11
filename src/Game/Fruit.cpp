@@ -71,6 +71,10 @@ void Fruit::Update()
 	{
 		Move();
 	}
+	else
+	{
+		m_velocity = VECTOR2F_ZERO;
+	}
 
 	m_acceleration = VECTOR2F_ZERO;
 
@@ -94,7 +98,7 @@ sf::Vector2f Fruit::GetVelocity() const
 
 void Fruit::SetVelocity(const sf::Vector2f velocity)
 {
-	m_stationary = velocity.length() <= 10.f;
+	m_stationary = velocity.length() <= 5.f;
 
 	m_velocity = velocity;
 }

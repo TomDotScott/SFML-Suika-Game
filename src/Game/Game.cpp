@@ -7,7 +7,7 @@
 #include "../Engine/Globals.h"
 #include "../Engine/Timer.h"
 
-float Game::Boundary::m_Damping = -750.f;
+float Game::Boundary::m_Damping = 0.8f;
 
 Game::Game() :
 	m_boundaries{ // TODO: This breaks in anything other than debug config...
@@ -140,9 +140,6 @@ bool Game::CircleLineCollision(Fruit& fruit, const Boundary& boundary)
 	const float dist = std::sqrt(fruitToBoundary.dot(fruitToBoundary));
 	const float signedDist = fruitToBoundary.dot(planeNormal);
 
-	printf("DISTANCE: %.2f\n", dist);
-	printf("SIGNED DISTANCE: %.2f\n", signedDist);
-
 	if (dist > fruit.GetRadius())
 	{
 		return false;
@@ -150,14 +147,18 @@ bool Game::CircleLineCollision(Fruit& fruit, const Boundary& boundary)
 
 	// We are close enough and heading in the right direction! We have a collision
 	const sf::Vector2f reflectedVelocity = fruit.GetVelocity() - 2 * velocityInOffsetDirection * planeNormal;
-	fruit.SetVelocity(reflectedVelocity);
+	fruit.SetVelocity(reflectedVelocity * Boundary::m_Damping);
 
-	const sf::Vector2f dampener = Boundary::m_Damping * -planeNormal;
-	fruit.ApplyForce(dampener);
+	// Fix any penetration
+	sf::Vector2f distanceVector = fruit.GetPosition() - closestPoint;
+	float distanceSquared = distanceVector.lengthSquared();
+	sf::Vector2f collisionNormal = distanceVector.normalized();
+	float penetrationDepth = fruit.GetRadius() - std::sqrt(distanceSquared);
 
-	// Apply an up force to prevent the fruit from falling through the boundary
-	const sf::Vector2f upForce = (fruit.GetRadius() - dist) * planeNormal;
-	fruit.ApplyForce(upForce * fruit.GetMass());
+	printf("PENETRATION DEPTH: %.2f\n", penetrationDepth);
+
+	// Resolve overlap by moving the circle away from the collision
+	fruit.SetPosition(fruit.GetPosition() + collisionNormal * penetrationDepth);
 
 	return true;
 }
