@@ -6,12 +6,13 @@
 
 Fruit::Fruit(const eFruitType type, const sf::Vector2f& position) :
 	GameObject(position),
+	m_type(type),
 	m_stationary(false)
 {
 	float radius = 0.0f;
 
 	// TODO: Make better
-	switch (type)
+	switch (m_type)
 	{
 	case eFruitType::Cherry:
 		radius = 10;
@@ -111,6 +112,41 @@ sf::Vector2f Fruit::GetAcceleration() const
 bool Fruit::IsStationary() const
 {
 	return m_stationary;
+}
+
+Fruit::eFruitType Fruit::GetType() const
+{
+	return m_type;
+}
+
+std::string Fruit::GetTypeName() const
+{
+	switch (m_type) {
+	case eFruitType::Cherry:
+		return "Cherry";
+	case eFruitType::Strawberry:
+		return "Strawberry";
+	case eFruitType::Grapes:
+		return "Grapes";
+	case eFruitType::Dekopon:
+		return "Dekopon";
+	case eFruitType::Orange:
+		return "Orange";
+	case eFruitType::Apple:
+		return "Apple";
+	case eFruitType::Pear:
+		return "Pear";
+	case eFruitType::Peach:
+		return "Peach";
+	case eFruitType::Pineapple:
+		return "Pineapple";
+	case eFruitType::Melon:
+		return "Melon";
+	case eFruitType::Watermelon:
+		return "Watermelon";
+	}
+
+	return "UNKNOWN";
 }
 
 void Fruit::Move()

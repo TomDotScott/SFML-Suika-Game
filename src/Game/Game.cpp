@@ -3,6 +3,7 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
+#include "Fruit.h"
 #include "../Engine/Globals.h"
 #include "../Engine/Timer.h"
 
@@ -12,20 +13,32 @@ Game::Game() :
 	m_boundaries{ // TODO: This breaks in anything other than debug config...
 	/*{{200.f, 0.f}, {200.f, 520.f}, VECTOR2F_RIGHT },
 	{{1080.f, 0.f}, {1080.f, 520.f}, VECTOR2F_LEFT },*/
-	{{200.f, 520.f}, {1080.f, 520.f}, VECTOR2F_DOWN }, },
-	m_fruit(Fruit::eFruitType::Cherry, { static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre.x), 0.f })
+	{{200.f, 520.f}, {1080.f, 520.f}, VECTOR2F_DOWN }, }
 {
-	sf::Vector2f randomForce = { static_cast<float>(RNG.Next()), static_cast<float>(RNG.Next()) };
-	randomForce = randomForce.normalized();
-	// m_fruit.ApplyForce(randomForce * m_fruit.GetMass());
+	constexpr int fruitAmount = 10;
+
+	m_fruit.reserve(fruitAmount);
+
+	constexpr float farLeft = 200.f;
+	constexpr float farRight = 1080.f;
+	constexpr float difference = farRight - farLeft;
+
+	for (int i = 1; i <= fruitAmount; ++i)
+	{
+		const float xPosition = farLeft + static_cast<float>(i - 1) * (difference / fruitAmount);
+
+		m_fruit.emplace_back(static_cast<Fruit::eFruitType>(i - 1), sf::Vector2f{ xPosition, 0.f });
+	}
 }
 
 void Game::Update()
 {
 	// Gravity
-	m_fruit.ApplyForce(sf::Vector2f(0.f, 1.f) * m_fruit.GetMass());
-
-	m_fruit.Update();
+	for (auto& fruit : m_fruit)
+	{
+		fruit.ApplyForce(sf::Vector2f(0.f, 1.f) * fruit.GetMass());
+		fruit.Update();
+	}
 
 	HandleCollisions();
 }
@@ -38,20 +51,33 @@ void Game::Render(sf::RenderWindow& window) const
 		const sf::Vertex line[] = { {point1, sf::Color::Magenta}, {point2, sf::Color::Magenta} };
 		window.draw(line, 2, sf::PrimitiveType::Lines);
 	}
-
-	char buffer[512];
-	sprintf(buffer, "Velocity: {%.3f,%.3f}\nAcceleration: {%.3f,%.3f}\nPosition: {%.3f,%.3f}", m_fruit.GetVelocity().x, m_fruit.GetVelocity().y, m_fruit.GetAcceleration().x, m_fruit.GetAcceleration().y, m_fruit.GetPosition().x, m_fruit.GetPosition().y);
-
-	DrawText(buffer, { 0.f, 200.f }, window);
 #endif
 
-	m_fruit.Render(window);
+	for (const auto& fruit : m_fruit)
+	{
+#if !BUILD_MASTER
+		char buffer[512];
+
+		sprintf(buffer,
+			"%s\n"
+			"Vel{%.3f,%.3f}\n"
+			"Mass:%.2f\n"
+			"Acc{%.3f,%.3f}\n"
+			"Pos{%.3f,%.3f}",
+			fruit.GetTypeName().c_str(),
+			fruit.GetVelocity().x, fruit.GetVelocity().y,
+			fruit.GetMass(),
+			fruit.GetAcceleration().x, fruit.GetAcceleration().y,
+			fruit.GetPosition().x, fruit.GetPosition().y
+		);
+
+		DrawText(buffer, { fruit.GetPosition().x - fruit.GetRadius(), fruit.GetPosition().y - fruit.GetRadius() - 80.f }, window);
+#endif
+		fruit.Render(window);
+	}
 
 #if !BUILD_MASTER
-	/*if (static int frameCount = 0; ++frameCount % 2 == 0)
-	{*/
 	DrawText(std::to_string(static_cast<int>(Timer::Get().Fps())) + "fps", VECTOR2F_ZERO, window);
-	//}
 #endif
 }
 
@@ -69,20 +95,23 @@ void Game::DrawText(const std::string& string, const sf::Vector2f& position, sf:
 
 void Game::HandleCollisions()
 {
-	for (const auto& boundary : m_boundaries)
+	for (auto& fruit : m_fruit)
 	{
-		if (CircleLineCollision(m_fruit, boundary))
+		for (const auto& boundary : m_boundaries)
 		{
-			std::cout << "COLLISION OCCURRED!" << std::endl;
+			if (CircleLineCollision(fruit, boundary))
+			{
+				std::cout << "COLLISION OCCURRED!" << std::endl;
+			}
 		}
-	}
 
-	// If the fruit is stationary, make sure it isn't overlapping
-	if (m_fruit.IsStationary())
-	{
-		if (m_fruit.GetPosition().y + m_fruit.GetRadius() > m_boundaries[0].m_P1.y)
+		// If the fruit is stationary, make sure it isn't overlapping
+		if (fruit.IsStationary())
 		{
-			m_fruit.SetPosition({ m_fruit.GetPosition().x, m_boundaries[0].m_P1.y - m_fruit.GetRadius() });
+			if (fruit.GetPosition().y + fruit.GetRadius() > m_boundaries[0].m_P1.y)
+			{
+				fruit.SetPosition({ fruit.GetPosition().x, m_boundaries[0].m_P1.y - fruit.GetRadius() });
+			}
 		}
 	}
 }

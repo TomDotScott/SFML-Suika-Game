@@ -41,9 +41,13 @@ public:
 
 	bool IsStationary() const;
 
+	eFruitType GetType() const;
+	std::string GetTypeName() const;
+
 private:
 	// TODO: Make this a texture
 	sf::CircleShape m_shape;
+	eFruitType m_type;
 
 	sf::Vector2f m_velocity;
 	sf::Vector2f m_acceleration;

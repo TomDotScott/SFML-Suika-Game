@@ -22,13 +22,13 @@ private:
 
 	Boundary m_boundaries[1];
 
-
-	Fruit m_fruit;
+	// TODO: This needs to be a better data structure
+	std::vector<Fruit> m_fruit;
 
 	static void DrawText(const std::string& string, const sf::Vector2f& position, sf::RenderWindow& window);
 
 	void HandleCollisions();
-	bool CircleLineCollision(Fruit& fruit, const Boundary& boundary);
+	static bool CircleLineCollision(Fruit& fruit, const Boundary& boundary);
 };
 
 
