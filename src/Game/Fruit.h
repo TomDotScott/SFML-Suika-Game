@@ -39,8 +39,6 @@ public:
 	float GetMass() const;
 	sf::Vector2f GetAcceleration() const;
 
-	bool IsStationary() const;
-
 	eFruitType GetType() const;
 	std::string GetTypeName() const;
 
@@ -52,7 +50,6 @@ private:
 	sf::Vector2f m_velocity;
 	sf::Vector2f m_acceleration;
 	float m_mass;
-	bool m_stationary;
 
 	void Move();
 	static sf::Color GetColour(eFruitType type);

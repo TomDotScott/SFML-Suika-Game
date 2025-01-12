@@ -20,7 +20,7 @@ private:
 		static float m_Damping;
 	};
 
-	Boundary m_boundaries[1];
+	Boundary m_boundaries[3];
 
 	// TODO: This needs to be a better data structure
 	std::vector<Fruit> m_fruit;
@@ -29,6 +29,7 @@ private:
 
 	void HandleCollisions();
 	static bool CircleLineCollision(Fruit& fruit, const Boundary& boundary);
+	static bool CircleCircleCollision(Fruit& fruit, Fruit& otherFruit);
 };
 
 

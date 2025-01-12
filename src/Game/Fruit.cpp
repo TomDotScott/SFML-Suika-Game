@@ -6,8 +6,7 @@
 
 Fruit::Fruit(const eFruitType type, const sf::Vector2f& position) :
 	GameObject(position),
-	m_type(type),
-	m_stationary(false)
+	m_type(type)
 {
 	float radius = 0.0f;
 
@@ -21,7 +20,7 @@ Fruit::Fruit(const eFruitType type, const sf::Vector2f& position) :
 		radius = 20;
 		break;
 	case eFruitType::Grapes:
-		radius = 25;
+		radius = 20;
 		break;
 	case eFruitType::Dekopon:
 		radius = 30;
@@ -30,22 +29,22 @@ Fruit::Fruit(const eFruitType type, const sf::Vector2f& position) :
 		radius = 40;
 		break;
 	case eFruitType::Apple:
-		radius = 50;
+		radius = 45;
 		break;
 	case eFruitType::Pear:
-		radius = 55;
+		radius = 50;
 		break;
 	case eFruitType::Peach:
-		radius = 60;
+		radius = 55;
 		break;
 	case eFruitType::Pineapple:
-		radius = 70;
+		radius = 60;
 		break;
 	case eFruitType::Melon:
-		radius = 75;
+		radius = 65;
 		break;
 	case eFruitType::Watermelon:
-		radius = 100;
+		radius = 80;
 		break;
 	}
 
@@ -67,14 +66,7 @@ Fruit::Fruit(const eFruitType type, const sf::Vector2f& position) :
 
 void Fruit::Update()
 {
-	if (!m_stationary)
-	{
-		Move();
-	}
-	else
-	{
-		m_velocity = VECTOR2F_ZERO;
-	}
+	Move();
 
 	m_acceleration = VECTOR2F_ZERO;
 
@@ -98,8 +90,6 @@ sf::Vector2f Fruit::GetVelocity() const
 
 void Fruit::SetVelocity(const sf::Vector2f velocity)
 {
-	m_stationary = velocity.length() <= 5.f;
-
 	m_velocity = velocity;
 }
 
@@ -111,11 +101,6 @@ float Fruit::GetMass() const
 sf::Vector2f Fruit::GetAcceleration() const
 {
 	return m_acceleration;
-}
-
-bool Fruit::IsStationary() const
-{
-	return m_stationary;
 }
 
 Fruit::eFruitType Fruit::GetType() const

@@ -18,7 +18,11 @@ public:
 	sf::Vector2f GetPosition() { return m_position; }
 	void SetPosition(const sf::Vector2f& position) { m_position = position; }
 
+	uint64_t GetID() const;
+
 protected:
+	const uint64_t m_id;
+
 	sf::Vector2f m_position;
 
 	std::vector<sf::Drawable*> m_drawables;

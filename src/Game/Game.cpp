@@ -10,17 +10,18 @@
 float Game::Boundary::m_Damping = 0.8f;
 
 Game::Game() :
-	m_boundaries{ // TODO: This breaks in anything other than debug config...
-	/*{{200.f, 0.f}, {200.f, 520.f}, VECTOR2F_RIGHT },
-	{{1080.f, 0.f}, {1080.f, 520.f}, VECTOR2F_LEFT },*/
-	{{200.f, 520.f}, {1080.f, 520.f}, VECTOR2F_DOWN }, }
+	m_boundaries{
+	// TODO: This breaks in anything other than debug config...
+	{{200.f, 0.f}, {200.f, 520.f}, VECTOR2F_LEFT },
+	{{1080.f, 0.f}, {1080.f, 520.f}, VECTOR2F_RIGHT },
+	{ { 200.f, 520.f }, { 1080.f, 520.f }, VECTOR2F_DOWN } }
 {
 	constexpr int fruitAmount = 10;
 
-	m_fruit.reserve(fruitAmount);
+	m_fruit.reserve(fruitAmount * 10);
 
-	constexpr float farLeft = 200.f;
-	constexpr float farRight = 1080.f;
+	constexpr float farLeft = 250.f;
+	constexpr float farRight = 1050.f;
 	constexpr float difference = farRight - farLeft;
 
 	for (int i = 1; i <= fruitAmount; ++i)
@@ -29,6 +30,8 @@ Game::Game() :
 
 		m_fruit.emplace_back(static_cast<Fruit::eFruitType>(i - 1), sf::Vector2f{ xPosition, 0.f });
 	}
+
+	m_fruit.emplace_back(Fruit::eFruitType::Apple, static_cast<sf::Vector2f>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre));
 }
 
 void Game::Update()
@@ -48,7 +51,7 @@ void Game::Render(sf::RenderWindow& window) const
 #if !BUILD_MASTER
 	for (const auto& [point1, point2, normal] : m_boundaries)
 	{
-		const sf::Vertex line[] = { {point1, sf::Color::Magenta}, {point2, sf::Color::Magenta} };
+		const sf::Vertex line[] = { { point1, sf::Color::Magenta }, { point2, sf::Color::Magenta } };
 		window.draw(line, 2, sf::PrimitiveType::Lines);
 	}
 #endif
@@ -60,18 +63,25 @@ void Game::Render(sf::RenderWindow& window) const
 
 		sprintf(buffer,
 			"%s\n"
+			"ID: %d\n"
 			"Vel{%.3f,%.3f}\n"
 			"Mass:%.2f\n"
 			"Acc{%.3f,%.3f}\n"
 			"Pos{%.3f,%.3f}",
 			fruit.GetTypeName().c_str(),
+			fruit.GetID(),
 			fruit.GetVelocity().x, fruit.GetVelocity().y,
 			fruit.GetMass(),
 			fruit.GetAcceleration().x, fruit.GetAcceleration().y,
 			fruit.GetPosition().x, fruit.GetPosition().y
 		);
 
-		DrawText(buffer, { fruit.GetPosition().x - fruit.GetRadius(), fruit.GetPosition().y - fruit.GetRadius() - 80.f }, window);
+		DrawText(buffer,
+			{
+					 fruit.GetPosition().x - fruit.GetRadius(), fruit.GetPosition().y - fruit.GetRadius() - 80.f
+			},
+			window
+		);
 #endif
 		fruit.Render(window);
 	}
@@ -105,12 +115,16 @@ void Game::HandleCollisions()
 			}
 		}
 
-		// If the fruit is stationary, make sure it isn't overlapping
-		if (fruit.IsStationary())
+		for (auto& otherFruit : m_fruit)
 		{
-			if (fruit.GetPosition().y + fruit.GetRadius() > m_boundaries[0].m_P1.y)
+			if (fruit.GetID() == otherFruit.GetID())
 			{
-				fruit.SetPosition({ fruit.GetPosition().x, m_boundaries[0].m_P1.y - fruit.GetRadius() });
+				continue;
+			}
+
+			if (CircleCircleCollision(fruit, otherFruit))
+			{
+				std::cout << "COLLISION OCCURRED!" << std::endl;
 			}
 		}
 	}
@@ -163,3 +177,52 @@ bool Game::CircleLineCollision(Fruit& fruit, const Boundary& boundary)
 	return true;
 }
 
+bool Game::CircleCircleCollision(Fruit& fruit, Fruit& otherFruit)
+{
+	const sf::Vector2f centreToCentre = fruit.GetPosition() - otherFruit.GetPosition();
+
+	const sf::Vector2f relativeVelocity = otherFruit.GetVelocity() - fruit.GetVelocity();
+
+	const float velocityInOffsetDirection = relativeVelocity.dot(centreToCentre);
+
+	if (velocityInOffsetDirection > 0)
+	{
+		return false;
+	}
+
+	const float distanceBetweenFruit = centreToCentre.length();
+
+	const float sumRadii = fruit.GetRadius() + otherFruit.GetRadius();
+
+	if (distanceBetweenFruit > sumRadii)
+	{
+		return false;
+	}
+
+	const float timeOfImpact = -(distanceBetweenFruit - sumRadii) / velocityInOffsetDirection;
+
+	if (timeOfImpact > Timer::Get().DeltaTime())
+	{
+		return false;
+	}
+
+	const sf::Vector2f collisionNormal = centreToCentre / distanceBetweenFruit;
+
+	const float velocityAlongNormal = relativeVelocity.dot(collisionNormal);
+
+	sf::Vector2f pointOfCollision = fruit.GetPosition() - collisionNormal * fruit.GetRadius();
+
+	constexpr float coefficientOfRestitution = 0.8f;
+
+	// Impulse scalar
+	float j = -(1.f + coefficientOfRestitution) * velocityAlongNormal;
+
+	j /= 1.f / fruit.GetMass() + 1.f / otherFruit.GetMass();
+
+	const sf::Vector2f impulse = j * collisionNormal;
+
+	fruit.SetVelocity(fruit.GetVelocity() - impulse / fruit.GetMass());
+	otherFruit.SetVelocity(otherFruit.GetVelocity() + impulse / otherFruit.GetMass());
+
+	return true;
+}
