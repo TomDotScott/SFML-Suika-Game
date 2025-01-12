@@ -4,55 +4,26 @@
 #include "../Engine/Globals.h"
 
 
+Fruit::FruitDetails Fruit::LookupTable[FRUIT_TYPE_MAX]
+{
+	{ "Cherry", sf::Color(0xF20C3AFF), 10.f, },
+	{ "Strawberry", sf::Color(0xF51D00FF), 20.f, },
+	{ "Grapes", sf::Color(0x750CF2FF), 25.f, },
+	{ "Dekopon", sf::Color(0xF4C860FF), 30.f, },
+	{ "Orange", sf::Color(0xF2690CFF), 40.f, },
+	{ "Apple", sf::Color(0x97F20CFF), 45.f, },
+	{ "Pear", sf::Color(0x0CF285FF), 50.f, },
+	{ "Peach", sf::Color(0xF5C6E5FF), 65.f, },
+	{ "Pineapple", sf::Color(0xFAF36BFF), 60.f, },
+	{ "Melon", sf::Color(0xB8F5A4FF), 65.f, },
+	{ "Watermelon", sf::Color(0x002801FF), 80.f, },
+};
+
 Fruit::Fruit(const eFruitType type, const sf::Vector2f& position) :
 	GameObject(position),
-	m_type(type)
+	m_currentType(type)
 {
-	float radius = 0.0f;
-
-	// TODO: Make better
-	switch (m_type)
-	{
-	case eFruitType::Cherry:
-		radius = 10;
-		break;
-	case eFruitType::Strawberry:
-		radius = 20;
-		break;
-	case eFruitType::Grapes:
-		radius = 20;
-		break;
-	case eFruitType::Dekopon:
-		radius = 30;
-		break;
-	case eFruitType::Orange:
-		radius = 40;
-		break;
-	case eFruitType::Apple:
-		radius = 45;
-		break;
-	case eFruitType::Pear:
-		radius = 50;
-		break;
-	case eFruitType::Peach:
-		radius = 55;
-		break;
-	case eFruitType::Pineapple:
-		radius = 60;
-		break;
-	case eFruitType::Melon:
-		radius = 65;
-		break;
-	case eFruitType::Watermelon:
-		radius = 80;
-		break;
-	}
-
-	m_mass = radius * 10.f;
-
-	m_shape.setRadius(radius);
-
-	m_shape.setFillColor(GetColour(type));
+	InitialiseFruitDetails();
 
 	m_shape.setPosition(m_position);
 
@@ -103,39 +74,18 @@ sf::Vector2f Fruit::GetAcceleration() const
 	return m_acceleration;
 }
 
-Fruit::eFruitType Fruit::GetType() const
+const Fruit::FruitDetails& Fruit::GetCurrentFruitDetails() const
 {
-	return m_type;
+	return LookupTable[m_currentType];
 }
 
-std::string Fruit::GetTypeName() const
+void Fruit::InitialiseFruitDetails()
 {
-	switch (m_type) {
-	case eFruitType::Cherry:
-		return "Cherry";
-	case eFruitType::Strawberry:
-		return "Strawberry";
-	case eFruitType::Grapes:
-		return "Grapes";
-	case eFruitType::Dekopon:
-		return "Dekopon";
-	case eFruitType::Orange:
-		return "Orange";
-	case eFruitType::Apple:
-		return "Apple";
-	case eFruitType::Pear:
-		return "Pear";
-	case eFruitType::Peach:
-		return "Peach";
-	case eFruitType::Pineapple:
-		return "Pineapple";
-	case eFruitType::Melon:
-		return "Melon";
-	case eFruitType::Watermelon:
-		return "Watermelon";
-	}
+	m_mass = LookupTable[m_currentType].m_Radius * 10.f;
 
-	return "UNKNOWN";
+	m_shape.setRadius(LookupTable[m_currentType].m_Radius);
+
+	m_shape.setFillColor(LookupTable[m_currentType].m_Colour);
 }
 
 void Fruit::Move()
@@ -143,37 +93,6 @@ void Fruit::Move()
 	m_velocity -= m_acceleration;
 
 	m_position -= m_velocity /** Timer::Get().DeltaTime()*/;
-}
-
-sf::Color Fruit::GetColour(const eFruitType type)
-{
-	switch (type)
-	{
-	case eFruitType::Cherry:
-		return sf::Color(0xF20C3AFF);
-	case eFruitType::Strawberry:
-		return sf::Color(0xF51D00FF);
-	case eFruitType::Grapes:
-		return sf::Color(0x750CF2FF);
-	case eFruitType::Dekopon:
-		return sf::Color(0xF4C860FF);
-	case eFruitType::Orange:
-		return sf::Color(0xF2690CFF);
-	case eFruitType::Apple:
-		return sf::Color(0x97F20CFF);
-	case eFruitType::Pear:
-		return sf::Color(0x0CF285FF);
-	case eFruitType::Peach:
-		return sf::Color(0xF5C6E5FF);
-	case eFruitType::Pineapple:
-		return sf::Color(0xFAF36BFF);
-	case eFruitType::Melon:
-		return sf::Color(0xB8F5A4FF);
-	case eFruitType::Watermelon:
-		return sf::Color(0x002801FF);
-	}
-
-	return sf::Color::Magenta;
 }
 
 
