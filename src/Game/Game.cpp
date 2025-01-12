@@ -30,8 +30,6 @@ Game::Game() :
 
 		m_fruit.emplace_back(static_cast<Fruit::eFruitType>(i - 1), sf::Vector2f{ xPosition, 0.f });
 	}
-
-	m_fruit.emplace_back(Fruit::eFruitType::Apple, static_cast<sf::Vector2f>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre));
 }
 
 void Game::Update()
@@ -68,7 +66,7 @@ void Game::Render(sf::RenderWindow& window) const
 			"Mass:%.2f\n"
 			"Acc{%.3f,%.3f}\n"
 			"Pos{%.3f,%.3f}",
-			fruit.GetTypeName().c_str(),
+			fruit.GetCurrentFruitDetails().m_Name.c_str(),
 			fruit.GetID(),
 			fruit.GetVelocity().x, fruit.GetVelocity().y,
 			fruit.GetMass(),
@@ -107,14 +105,6 @@ void Game::HandleCollisions()
 {
 	for (auto& fruit : m_fruit)
 	{
-		for (const auto& boundary : m_boundaries)
-		{
-			if (CircleLineCollision(fruit, boundary))
-			{
-				std::cout << "COLLISION OCCURRED!" << std::endl;
-			}
-		}
-
 		for (auto& otherFruit : m_fruit)
 		{
 			if (fruit.GetID() == otherFruit.GetID())
@@ -127,6 +117,15 @@ void Game::HandleCollisions()
 				std::cout << "COLLISION OCCURRED!" << std::endl;
 			}
 		}
+
+		for (const auto& boundary : m_boundaries)
+		{
+			if (CircleLineCollision(fruit, boundary))
+			{
+				std::cout << "COLLISION OCCURRED!" << std::endl;
+			}
+		}
+
 	}
 }
 
