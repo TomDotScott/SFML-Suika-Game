@@ -18,22 +18,29 @@ Game::Game() :
 {
 	constexpr int fruitAmount = 10;
 
+	// TODO: Game crashes when vector resizes. Need an object pool of some sort
 	m_fruit.reserve(fruitAmount * 10);
 
-	constexpr float farLeft = 250.f;
-	constexpr float farRight = 1050.f;
-	constexpr float difference = farRight - farLeft;
-
-	for (int i = 1; i <= fruitAmount; ++i)
-	{
-		const float xPosition = farLeft + static_cast<float>(i - 1) * (difference / fruitAmount);
-
-		m_fruit.emplace_back(static_cast<Fruit::eFruitType>(i - 1), sf::Vector2f{ xPosition, 0.f });
-	}
+	m_fruit.emplace_back(Fruit::FRUIT_TYPE_Cherry, sf::Vector2f{ static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre.x), 0.f });
 }
 
 void Game::Update()
 {
+	static float timer = 0.f;
+
+	// Every 5 seconds spawn a new fruit
+	timer += Timer::Get().DeltaTime();
+
+	if (timer >= 5.f)
+	{
+		const float left = m_boundaries[0].m_P1.x + Fruit::GetFruitDetails(Fruit::FRUIT_TYPE_Watermelon).m_Radius;
+		const float right = m_boundaries[1].m_P1.x - Fruit::GetFruitDetails(Fruit::FRUIT_TYPE_Watermelon).m_Radius;
+		const float diff = right - left;
+
+		m_fruit.emplace_back(Fruit::FRUIT_TYPE_Cherry, sf::Vector2f{ left + static_cast<float>(RNG.Next()) * diff, 0.f });
+		timer = 0.f;
+	}
+
 	// Gravity
 	for (auto& fruit : m_fruit)
 	{
@@ -222,6 +229,15 @@ bool Game::CircleCircleCollision(Fruit& fruit, Fruit& otherFruit)
 
 	fruit.SetVelocity(fruit.GetVelocity() - impulse / fruit.GetMass());
 	otherFruit.SetVelocity(otherFruit.GetVelocity() + impulse / otherFruit.GetMass());
+
+	// Positional correction
+	const float penetrationDepth = sumRadii - distanceBetweenFruit;
+
+	// Adjust positions to resolve overlap
+	const sf::Vector2f correction = collisionNormal * penetrationDepth;
+
+	fruit.SetPosition(fruit.GetPosition() + correction);
+	otherFruit.SetPosition(otherFruit.GetPosition() - correction);
 
 	return true;
 }

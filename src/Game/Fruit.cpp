@@ -79,6 +79,11 @@ const Fruit::FruitDetails& Fruit::GetCurrentFruitDetails() const
 	return LookupTable[m_currentType];
 }
 
+const Fruit::FruitDetails& Fruit::GetFruitDetails(eFruitType type)
+{
+	return LookupTable[type];
+}
+
 void Fruit::InitialiseFruitDetails()
 {
 	m_mass = LookupTable[m_currentType].m_Radius * 10.f;

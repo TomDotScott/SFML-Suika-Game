@@ -50,6 +50,7 @@ public:
 	sf::Vector2f GetAcceleration() const;
 
 	const FruitDetails& GetCurrentFruitDetails() const;
+	static const FruitDetails& GetFruitDetails(eFruitType type);
 
 
 private:
