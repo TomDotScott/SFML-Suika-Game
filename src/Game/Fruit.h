@@ -26,6 +26,7 @@ public:
 
 	struct FruitDetails
 	{
+		eFruitType m_Type;
 		std::string m_Name;
 		sf::Color m_Colour;
 		float m_Radius;
@@ -52,6 +53,7 @@ public:
 	static const FruitDetails& GetFruitDetails(eFruitType type);
 
 	void OnActivate(eFruitType type, sf::Vector2f position);
+	void Upgrade();
 
 private:
 	// TODO: Make this a texture

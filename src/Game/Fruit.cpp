@@ -6,17 +6,17 @@
 
 Fruit::FruitDetails Fruit::LookupTable[FRUIT_TYPE_MAX]
 {
-	{ "Cherry", sf::Color(0xF20C3AFF), 10.f, },
-	{ "Strawberry", sf::Color(0xF51D00FF), 20.f, },
-	{ "Grapes", sf::Color(0x750CF2FF), 25.f, },
-	{ "Dekopon", sf::Color(0xF4C860FF), 30.f, },
-	{ "Orange", sf::Color(0xF2690CFF), 40.f, },
-	{ "Apple", sf::Color(0x97F20CFF), 45.f, },
-	{ "Pear", sf::Color(0x0CF285FF), 50.f, },
-	{ "Peach", sf::Color(0xF5C6E5FF), 65.f, },
-	{ "Pineapple", sf::Color(0xFAF36BFF), 60.f, },
-	{ "Melon", sf::Color(0xB8F5A4FF), 65.f, },
-	{ "Watermelon", sf::Color(0x002801FF), 80.f, },
+	{ FRUIT_TYPE_Cherry, "Cherry", sf::Color(0xF20C3AFF), 10.f, },
+	{ FRUIT_TYPE_Strawberry, "Strawberry", sf::Color(0xF51D00FF), 20.f, },
+	{ FRUIT_TYPE_Grapes, "Grapes", sf::Color(0x750CF2FF), 25.f, },
+	{ FRUIT_TYPE_Dekopon, "Dekopon", sf::Color(0xF4C860FF), 30.f, },
+	{ FRUIT_TYPE_Orange, "Orange", sf::Color(0xF2690CFF), 40.f, },
+	{ FRUIT_TYPE_Apple, "Apple", sf::Color(0x97F20CFF), 45.f, },
+	{ FRUIT_TYPE_Pear, "Pear", sf::Color(0x0CF285FF), 50.f, },
+	{ FRUIT_TYPE_Peach, "Peach", sf::Color(0xF5C6E5FF), 65.f, },
+	{ FRUIT_TYPE_Pineapple, "Pineapple", sf::Color(0xFAF36BFF), 60.f, },
+	{ FRUIT_TYPE_Melon, "Melon", sf::Color(0xB8F5A4FF), 65.f, },
+	{ FRUIT_TYPE_Watermelon, "Watermelon", sf::Color(0x002801FF), 80.f, },
 };
 
 Fruit::Fruit() :
@@ -86,6 +86,12 @@ void Fruit::OnActivate(const eFruitType type, const sf::Vector2f position)
 	GameObject::OnActivate();
 
 	InitialiseFruitDetails(type, position);
+}
+
+void Fruit::Upgrade()
+{
+	m_currentType = static_cast<eFruitType>(std::min(static_cast<int>(m_currentType) + 1, static_cast<int>(FRUIT_TYPE_Watermelon)));
+	InitialiseFruitDetails(m_currentType, m_position);
 }
 
 void Fruit::InitialiseFruitDetails(const eFruitType type, const sf::Vector2f position)

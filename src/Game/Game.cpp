@@ -1,6 +1,7 @@
 #include "Game.h"
 
 #include <iostream>
+#include <set>
 #include <SFML/Graphics.hpp>
 
 #include "Fruit.h"
@@ -33,7 +34,11 @@ void Game::Update()
 		const float right = m_boundaries[1].m_P1.x - Fruit::GetFruitDetails(Fruit::FRUIT_TYPE_Watermelon).m_Radius;
 		const float diff = right - left;
 
-		m_fruit.ActivateObject(Fruit::FRUIT_TYPE_Cherry, sf::Vector2f{ left + static_cast<float>(RNG.Next()) * diff, 0.f });
+		for (int i = 0; i < 10; ++i)
+		{
+			m_fruit.ActivateObject(Fruit::FRUIT_TYPE_Cherry, sf::Vector2f{ left + static_cast<float>(RNG.Next()) * diff, 0.f });
+		}
+
 		timer = 0.f;
 	}
 
@@ -89,6 +94,8 @@ void Game::Render(sf::RenderWindow& window) const
 
 #if !BUILD_MASTER
 	DrawText(std::to_string(static_cast<int>(Timer::Get().Fps())) + "fps", VECTOR2F_ZERO, window);
+
+	DrawText("Active fruit: " + std::to_string(static_cast<int>(m_fruit.GetInUseCount())), VECTOR2F_ZERO + sf::Vector2f{ 0.f, 100.f }, window);
 #endif
 }
 
@@ -106,18 +113,42 @@ void Game::DrawText(const std::string& string, const sf::Vector2f& position, sf:
 
 void Game::HandleCollisions()
 {
-	for (auto& fruit : m_fruit)
+	std::set<Fruit*> fruitToBeRemoved;
+	std::set<Fruit*> fruitToBeUpgraded;
+
+	for (Fruit& fruit : m_fruit)
 	{
-		for (auto& otherFruit : m_fruit)
+		const bool fruitIsRemoved = fruitToBeRemoved.find(&fruit) != fruitToBeRemoved.end();
+
+		if (fruitIsRemoved)
 		{
-			if (fruit.GetID() == otherFruit.GetID())
+			continue;
+		}
+
+		for (Fruit& otherFruit : m_fruit)
+		{
+			const bool otherFruitIsRemoved = fruitToBeRemoved.find(&otherFruit) != fruitToBeRemoved.end();
+
+			if (otherFruitIsRemoved || fruit.GetID() == otherFruit.GetID())
 			{
 				continue;
 			}
 
 			if (CircleCircleCollision(fruit, otherFruit))
 			{
-				std::cout << "COLLISION OCCURRED!" << std::endl;
+				if (fruit.GetCurrentFruitDetails().m_Type == otherFruit.GetCurrentFruitDetails().m_Type)
+				{
+					if (fruit.GetPosition().y < otherFruit.GetPosition().y)
+					{
+						fruitToBeRemoved.insert(&fruit);
+						fruitToBeUpgraded.insert(&otherFruit);
+					}
+					else
+					{
+						fruitToBeRemoved.insert(&otherFruit);
+						fruitToBeUpgraded.insert(&fruit);
+					}
+				}
 			}
 		}
 
@@ -125,10 +156,19 @@ void Game::HandleCollisions()
 		{
 			if (CircleLineCollision(fruit, boundary))
 			{
-				std::cout << "COLLISION OCCURRED!" << std::endl;
 			}
 		}
+	}
 
+	for (Fruit* removeFruit : fruitToBeRemoved)
+	{
+		m_fruit.DeactivateObject(removeFruit);
+	}
+
+	for (Fruit* upgradeFruit : fruitToBeUpgraded)
+	{
+		// TODO: Add points
+		upgradeFruit->Upgrade();
 	}
 }
 
@@ -170,8 +210,6 @@ bool Game::CircleLineCollision(Fruit& fruit, const Boundary& boundary)
 	const float distanceSquared = distanceVector.lengthSquared();
 	const sf::Vector2f collisionNormal = distanceVector.normalized();
 	const float penetrationDepth = fruit.GetRadius() - std::sqrt(distanceSquared);
-
-	printf("PENETRATION DEPTH: %.2f\n", penetrationDepth);
 
 	// Resolve overlap by moving the circle away from the collision
 	fruit.SetPosition(fruit.GetPosition() + collisionNormal * penetrationDepth);
