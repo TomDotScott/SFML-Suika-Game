@@ -14,14 +14,10 @@ Game::Game() :
 	// TODO: This breaks in anything other than debug config...
 	{{200.f, 0.f}, {200.f, 520.f}, VECTOR2F_LEFT },
 	{{1080.f, 0.f}, {1080.f, 520.f}, VECTOR2F_RIGHT },
-	{ { 200.f, 520.f }, { 1080.f, 520.f }, VECTOR2F_DOWN } }
+	{ { 200.f, 520.f }, { 1080.f, 520.f }, VECTOR2F_DOWN } },
+	m_fruit()
 {
-	constexpr int fruitAmount = 10;
-
-	// TODO: Game crashes when vector resizes. Need an object pool of some sort
-	m_fruit.reserve(fruitAmount * 10);
-
-	m_fruit.emplace_back(Fruit::FRUIT_TYPE_Cherry, sf::Vector2f{ static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre.x), 0.f });
+	m_fruit.ActivateObject(Fruit::FRUIT_TYPE_Cherry, sf::Vector2f{ static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre.x), 0.f });
 }
 
 void Game::Update()
@@ -31,13 +27,13 @@ void Game::Update()
 	// Every 5 seconds spawn a new fruit
 	timer += Timer::Get().DeltaTime();
 
-	if (timer >= 5.f)
+	if (timer >= 1.f)
 	{
 		const float left = m_boundaries[0].m_P1.x + Fruit::GetFruitDetails(Fruit::FRUIT_TYPE_Watermelon).m_Radius;
 		const float right = m_boundaries[1].m_P1.x - Fruit::GetFruitDetails(Fruit::FRUIT_TYPE_Watermelon).m_Radius;
 		const float diff = right - left;
 
-		m_fruit.emplace_back(Fruit::FRUIT_TYPE_Cherry, sf::Vector2f{ left + static_cast<float>(RNG.Next()) * diff, 0.f });
+		m_fruit.ActivateObject(Fruit::FRUIT_TYPE_Cherry, sf::Vector2f{ left + static_cast<float>(RNG.Next()) * diff, 0.f });
 		timer = 0.f;
 	}
 
@@ -68,7 +64,7 @@ void Game::Render(sf::RenderWindow& window) const
 
 		sprintf(buffer,
 			"%s\n"
-			"ID: %d\n"
+			"ID: %llu\n"
 			"Vel{%.3f,%.3f}\n"
 			"Mass:%.2f\n"
 			"Acc{%.3f,%.3f}\n"

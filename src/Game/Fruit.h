@@ -32,8 +32,7 @@ public:
 		int m_Points;
 	};
 
-
-	Fruit(eFruitType type, const sf::Vector2f& position);
+	Fruit();
 
 	~Fruit() override = default;
 
@@ -52,6 +51,7 @@ public:
 	const FruitDetails& GetCurrentFruitDetails() const;
 	static const FruitDetails& GetFruitDetails(eFruitType type);
 
+	void OnActivate(eFruitType type, sf::Vector2f position);
 
 private:
 	// TODO: Make this a texture
@@ -64,7 +64,7 @@ private:
 
 	static FruitDetails LookupTable[FRUIT_TYPE_MAX];
 
-	void InitialiseFruitDetails();
+	void InitialiseFruitDetails(eFruitType type, sf::Vector2f position);
 	void Move();
 };
 

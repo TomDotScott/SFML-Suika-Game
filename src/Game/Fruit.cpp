@@ -19,21 +19,15 @@ Fruit::FruitDetails Fruit::LookupTable[FRUIT_TYPE_MAX]
 	{ "Watermelon", sf::Color(0x002801FF), 80.f, },
 };
 
-Fruit::Fruit(const eFruitType type, const sf::Vector2f& position) :
-	GameObject(position),
-	m_currentType(type)
+Fruit::Fruit() :
+	GameObject(),
+	m_currentType(FRUIT_TYPE_Cherry),
+	m_mass(0.f)
 {
-	InitialiseFruitDetails();
-
-	m_shape.setPosition(m_position);
-
-
-	// Set the point to the centre
-	m_shape.setOrigin({ m_shape.getGlobalBounds().size.x / 2.f, m_shape.getGlobalBounds().size.y / 2.f });
+	InitialiseFruitDetails(m_currentType, sf::Vector2f(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre));
 
 	m_drawables.emplace_back(&m_shape);
 }
-
 
 void Fruit::Update()
 {
@@ -84,13 +78,29 @@ const Fruit::FruitDetails& Fruit::GetFruitDetails(eFruitType type)
 	return LookupTable[type];
 }
 
-void Fruit::InitialiseFruitDetails()
+// TODO: Work out some std::function magic to make this not be an overload
+// see if there's a way we can call a protected member m_onActivatedFunc from
+// OnActivate and pass through the params from the variadic ObjectPool class
+void Fruit::OnActivate(const eFruitType type, const sf::Vector2f position)
 {
-	m_mass = LookupTable[m_currentType].m_Radius * 10.f;
+	GameObject::OnActivate();
 
-	m_shape.setRadius(LookupTable[m_currentType].m_Radius);
+	InitialiseFruitDetails(type, position);
+}
 
-	m_shape.setFillColor(LookupTable[m_currentType].m_Colour);
+void Fruit::InitialiseFruitDetails(const eFruitType type, const sf::Vector2f position)
+{
+	m_mass = LookupTable[type].m_Radius * 10.f;
+
+	m_shape.setRadius(LookupTable[type].m_Radius);
+
+	m_shape.setFillColor(LookupTable[type].m_Colour);
+
+	m_shape.setOrigin({ m_shape.getGlobalBounds().size.x / 2.f, m_shape.getGlobalBounds().size.y / 2.f });
+
+	m_currentType = type;
+
+	m_position = position;
 }
 
 void Fruit::Move()

@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 #include "Fruit.h"
+#include "../Engine/ObjectPool.h"
 
 class Game
 {
@@ -22,8 +23,7 @@ private:
 
 	Boundary m_boundaries[3];
 
-	// TODO: This needs to be a better data structure
-	std::vector<Fruit> m_fruit;
+	ObjectPool<Fruit, 100> m_fruit;
 
 	static void DrawText(const std::string& string, const sf::Vector2f& position, sf::RenderWindow& window);
 
