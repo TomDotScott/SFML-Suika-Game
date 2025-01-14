@@ -148,7 +148,7 @@ public:
 			return nullptr;
 		}
 
-		int index = m_freeList.top();
+		size_t index = m_freeList.top();
 		m_freeList.pop();
 
 		m_size++;
@@ -160,17 +160,16 @@ public:
 		return &m_pool[index];
 	}
 
-	template<class... Ts>
-	void DeactivateObject(T* obj, Ts... args)
+	void DeactivateObject(T* obj)
 	{
-		const int index = obj - m_pool[0];
+		const size_t index = obj - &m_pool[0];
 
 		if (index < 0 || index > m_capacity)
 		{
 			printf("FAILED TO DEACTIVATE OBJECT\n");
 		}
 
-		obj->OnDeactivate(args...);
+		obj->OnDeactivate();
 
 		m_freeList.push(index);
 
@@ -179,12 +178,12 @@ public:
 		m_size--;
 	}
 
-	int GetInUseCount() const
+	size_t GetInUseCount() const
 	{
 		return m_size;
 	}
 
-	int GetCapacity() const
+	size_t GetCapacity() const
 	{
 		return m_capacity;
 	}
@@ -231,15 +230,14 @@ public:
 
 private:
 	std::array<T, N> m_pool;
-	std::stack<int> m_freeList;
+	std::stack<size_t> m_freeList;
 
 	// Keeping track of the active objects with a bitset
 	std::bitset<N> m_bitset;
 	BitsetRange<T, N> m_range;
 
-	int m_capacity;
-	int m_size;
-
+	size_t m_capacity;
+	size_t m_size;
 };
 
 #endif
