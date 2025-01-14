@@ -80,7 +80,7 @@ void Game::Render(sf::RenderWindow& window) const
 			"Mass:%.2f\n"
 			"Acc{%.3f,%.3f}\n"
 			"Pos{%.3f,%.3f}",
-			fruit.GetCurrentFruitDetails().m_Name.c_str(),
+			fruit.GetCurrentFruitDetails().m_Name,
 			fruit.GetID(),
 			fruit.GetVelocity().x, fruit.GetVelocity().y,
 			fruit.GetMass(),
@@ -144,15 +144,19 @@ void Game::HandleCollisions()
 			{
 				if (fruit.GetCurrentFruitDetails().m_Type == otherFruit.GetCurrentFruitDetails().m_Type)
 				{
+					const sf::Vector2f midpoint = (otherFruit.GetPosition() + fruit.GetPosition()) / 2.f;
+
 					if (fruit.GetPosition().y < otherFruit.GetPosition().y)
 					{
 						fruitToBeRemoved.insert(&fruit);
 						fruitToBeUpgraded.insert(&otherFruit);
+						otherFruit.SetPosition(midpoint);
 					}
 					else
 					{
 						fruitToBeRemoved.insert(&otherFruit);
 						fruitToBeUpgraded.insert(&fruit);
+						fruit.SetPosition(midpoint);
 					}
 				}
 			}

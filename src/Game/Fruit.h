@@ -27,7 +27,7 @@ public:
 	struct FruitDetails
 	{
 		eFruitType m_Type;
-		std::string m_Name;
+		const char* m_Name;
 		sf::Color m_Colour;
 		float m_Radius;
 		int m_Points;
@@ -63,8 +63,6 @@ private:
 	sf::Vector2f m_velocity;
 	sf::Vector2f m_acceleration;
 	float m_mass;
-
-	static FruitDetails LookupTable[FRUIT_TYPE_MAX];
 
 	void InitialiseFruitDetails(eFruitType type, sf::Vector2f position);
 	void Move();
