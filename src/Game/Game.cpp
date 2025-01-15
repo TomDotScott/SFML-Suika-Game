@@ -141,24 +141,26 @@ void Game::HandleCollisions()
 				continue;
 			}
 
-			if (CircleCircleCollision(fruit, otherFruit))
-			{
-				if (fruit.GetCurrentFruitDetails().m_Type == otherFruit.GetCurrentFruitDetails().m_Type)
-				{
-					const sf::Vector2f midpoint = (otherFruit.GetPosition() + fruit.GetPosition()) / 2.f;
+			const bool areFruitTheSame = fruit.GetCurrentFruitDetails().m_Type == otherFruit.GetCurrentFruitDetails().m_Type;
+			const bool isWatermelon = fruit.GetCurrentFruitDetails().m_Type == Fruit::FRUIT_TYPE_Watermelon;
 
-					if (fruit.GetPosition().y < otherFruit.GetPosition().y)
-					{
-						fruitToBeRemoved.insert(&fruit);
-						fruitToBeUpgraded.insert(&otherFruit);
-						otherFruit.SetPosition(midpoint);
-					}
-					else
-					{
-						fruitToBeRemoved.insert(&otherFruit);
-						fruitToBeUpgraded.insert(&fruit);
-						fruit.SetPosition(midpoint);
-					}
+			if (CircleCircleCollision(fruit, otherFruit)
+				&& areFruitTheSame
+				&& !isWatermelon)
+			{
+				const sf::Vector2f midpoint = (otherFruit.GetPosition() + fruit.GetPosition()) / 2.f;
+
+				if (fruit.GetPosition().y < otherFruit.GetPosition().y)
+				{
+					fruitToBeRemoved.insert(&fruit);
+					fruitToBeUpgraded.insert(&otherFruit);
+					otherFruit.SetPosition(midpoint);
+				}
+				else
+				{
+					fruitToBeRemoved.insert(&otherFruit);
+					fruitToBeUpgraded.insert(&fruit);
+					fruit.SetPosition(midpoint);
 				}
 			}
 		}
