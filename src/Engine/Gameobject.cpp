@@ -1,12 +1,17 @@
 #include "Gameobject.h"
 
-static uint64_t CURRENT_ID = 0;
+#include "Globals.h"
+
+namespace
+{
+	uint64_t CURRENT_ID = 0;
+}
 
 GameObject::GameObject(const sf::Vector2f position) :
-	m_id(++CURRENT_ID),
-	m_position(position),
-	m_isActive(false)
+	m_isActive(false),
+	m_id(++CURRENT_ID)
 {
+	SetPosition(position);
 	m_drawables.reserve(100);
 }
 
@@ -31,6 +36,11 @@ void GameObject::Render(sf::RenderWindow& window) const
 	{
 		window.draw(*drawable);
 	}
+}
+
+void GameObject::SetPosition(const sf::Vector2f& position)
+{
+	m_position = position;
 }
 
 uint64_t GameObject::GetID() const

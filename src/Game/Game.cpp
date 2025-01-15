@@ -12,10 +12,9 @@ float Game::Boundary::m_Damping = 0.8f;
 
 Game::Game() :
 	m_boundaries{
-	// TODO: This breaks in anything other than debug config...
-	{ {     0, 0.f },   {  200.f, 520.f }, VECTOR2F_RIGHT },
-	{ {1080.f, 0.f },   { 1280.f, 520.f }, VECTOR2F_LEFT },
-	{ {     0, 520.f }, { 1280.f, 720.f }, VECTOR2F_UP } },
+	{ TRANSFORMED_VECTOR(sf::Vector2f(0.f, 0.f)),    TRANSFORMED_VECTOR(sf::Vector2f(64.f, 720.f)), VECTOR2F_RIGHT},
+	{ TRANSFORMED_VECTOR(sf::Vector2f(1216.f, 0.f)), TRANSFORMED_VECTOR(sf::Vector2f(1280.f, 720.f)), VECTOR2F_LEFT },
+	{ TRANSFORMED_VECTOR(sf::Vector2f(0.f, 700.f)),  TRANSFORMED_VECTOR(sf::Vector2f(1280.f, 720.f)), VECTOR2F_UP } },
 	m_fruit()
 {
 	m_fruit.ActivateObject(Fruit::FRUIT_TYPE_Cherry, sf::Vector2f{ static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre.x), 0.f });
@@ -30,13 +29,15 @@ void Game::Update()
 
 	if (timer >= 1.f)
 	{
-		const float left = m_boundaries[0].m_TopLeft.x + Fruit::GetFruitDetails(Fruit::FRUIT_TYPE_Watermelon).m_Radius;
+		const float left = m_boundaries[0].m_BottomRight.x + Fruit::GetFruitDetails(Fruit::FRUIT_TYPE_Watermelon).m_Radius;
 		const float right = m_boundaries[1].m_TopLeft.x - Fruit::GetFruitDetails(Fruit::FRUIT_TYPE_Watermelon).m_Radius;
 		const float diff = right - left;
 
-		for (int i = 0; i < 10; ++i)
+		for (int i = 0; i < 3; ++i)
 		{
-			m_fruit.ActivateObject(Fruit::FRUIT_TYPE_Cherry, sf::Vector2f{ left + static_cast<float>(RNG.Next()) * diff, 0.f });
+			const auto randomType = static_cast<Fruit::eFruitType>(static_cast<int>(RNG.Next() * static_cast<double>(Fruit::FRUIT_TYPE_Apple)));
+
+			m_fruit.ActivateObject(randomType, sf::Vector2f{ left + Fruit::GetFruitDetails(randomType).m_Radius + 20.f + static_cast<float>(RNG.Next()) * diff, 0.f });
 		}
 
 		timer = 0.f;

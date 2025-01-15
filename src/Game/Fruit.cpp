@@ -96,9 +96,11 @@ void Fruit::Upgrade()
 
 void Fruit::InitialiseFruitDetails(const eFruitType type, const sf::Vector2f position)
 {
-	m_mass = LookupTable[type].m_Radius * 5.f;
+	const float radius = TRANSFORMED_SCALAR(LookupTable[type].m_Radius);
 
-	m_shape.setRadius(LookupTable[type].m_Radius);
+	m_mass = radius * TRANSFORMED_SCALAR(5.f);
+
+	m_shape.setRadius(radius);
 
 	m_shape.setFillColor(LookupTable[type].m_Colour);
 

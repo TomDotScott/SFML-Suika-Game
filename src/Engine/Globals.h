@@ -40,7 +40,15 @@ private:
 #define VECTOR2F_UP sf::Vector2f(0.f, -1.f)
 #define VECTOR2F_DOWN sf::Vector2f(0.f, 1.f)
 
+constexpr static sf::Vector2u REFERENCE_SCREEN_SIZE{ 1280, 720 };
 extern GraphicSettings GRAPHIC_SETTINGS;
 extern RandomRangeGenerator RNG;
+
+#define SCALE_X (static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenSize.x) / static_cast<float>(REFERENCE_SCREEN_SIZE.x))
+#define SCALE_Y (static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenSize.y) / static_cast<float>(REFERENCE_SCREEN_SIZE.y))
+
+// TODO: This would be better doing proper projection matrices. But I'm not a graphics programmer and this works for now...
+#define TRANSFORMED_SCALAR(x) ((x) * std::min(SCALE_X, SCALE_Y))
+#define TRANSFORMED_VECTOR(v) sf::Vector2f { TRANSFORMED_SCALAR((v).x), TRANSFORMED_SCALAR((v).y) }
 
 #endif

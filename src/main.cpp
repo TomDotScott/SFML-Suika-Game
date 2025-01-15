@@ -40,6 +40,10 @@ int main(int argc, char** argv)
 			{
 				window.close();
 			}
+			if (event->is<sf::Event::Resized>())
+			{
+				GRAPHIC_SETTINGS.SetScreenSize(window.getSize());
+			}
 		}
 
 		Timer::Get().Update();
