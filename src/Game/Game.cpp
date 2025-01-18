@@ -43,10 +43,10 @@ void Game::Update()
 		timer = 0.f;
 	}
 
-	// Gravity
 	for (auto& fruit : m_fruit)
 	{
-		fruit.ApplyForce(sf::Vector2f(0.f, 1.f) * fruit.GetMass());
+		// Gravity
+		fruit.ApplyForce(sf::Vector2f(0.f, 20.f) * fruit.GetMass());
 		fruit.Update();
 	}
 

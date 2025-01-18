@@ -115,7 +115,7 @@ void Fruit::Move()
 {
 	m_velocity -= m_acceleration;
 
-	m_position -= m_velocity /** Timer::Get().DeltaTime()*/;
+	m_position -= m_velocity * Timer::Get().DeltaTime();
 }
 
 
