@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "Engine/Globals.h"
+#include "Engine/Keyboard.h"
 #include "Engine/Timer.h"
 #include "Game/Game.h"
 
@@ -45,6 +46,8 @@ int main(int argc, char** argv)
 				GRAPHIC_SETTINGS.SetScreenSize(window.getSize());
 			}
 		}
+
+		Keyboard::Get().Update();
 
 		Timer::Get().Update();
 

@@ -15,13 +15,16 @@ Game::Game() :
 	{ TRANSFORMED_VECTOR(sf::Vector2f(0.f, 0.f)),    TRANSFORMED_VECTOR(sf::Vector2f(64.f, 720.f)), VECTOR2F_RIGHT},
 	{ TRANSFORMED_VECTOR(sf::Vector2f(1216.f, 0.f)), TRANSFORMED_VECTOR(sf::Vector2f(1280.f, 720.f)), VECTOR2F_LEFT },
 	{ TRANSFORMED_VECTOR(sf::Vector2f(0.f, 700.f)),  TRANSFORMED_VECTOR(sf::Vector2f(1280.f, 720.f)), VECTOR2F_UP } },
-	m_fruit()
+	m_fruit(),
+	m_player()
 {
 	m_fruit.ActivateObject(Fruit::FRUIT_TYPE_Cherry, sf::Vector2f{ static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre.x), 0.f });
 }
 
 void Game::Update()
 {
+	m_player.Update();
+
 	static float timer = 0.f;
 
 	// Every 5 seconds spawn a new fruit
@@ -35,9 +38,8 @@ void Game::Update()
 
 		for (int i = 0; i < 3; ++i)
 		{
-			const auto randomType = static_cast<Fruit::eFruitType>(static_cast<int>(RNG.Next() * static_cast<double>(Fruit::FRUIT_TYPE_Apple)));
-
-			m_fruit.ActivateObject(randomType, sf::Vector2f{ left + Fruit::GetFruitDetails(randomType).m_Radius + 20.f + static_cast<float>(RNG.Next()) * diff, 0.f });
+			Fruit* fruit = GenerateRandomFruit();
+			fruit->SetPosition(sf::Vector2f{ left + fruit->GetCurrentFruitDetails().m_Radius + 20.f + static_cast<float>(RNG.Next()) * diff, 0.f });
 		}
 
 		timer = 0.f;
@@ -270,4 +272,11 @@ bool Game::CircleCircleCollision(Fruit& fruit, Fruit& otherFruit)
 	otherFruit.SetPosition(otherFruit.GetPosition() - correction);
 
 	return true;
+}
+
+Fruit* Game::GenerateRandomFruit()
+{
+	const auto randomType = static_cast<Fruit::eFruitType>(static_cast<int>(RNG.Next() * static_cast<double>(Fruit::FRUIT_TYPE_Apple)));
+
+	return m_fruit.ActivateObject(randomType);
 }
