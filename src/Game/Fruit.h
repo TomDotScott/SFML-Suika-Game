@@ -4,12 +4,14 @@
 #include <SFML/Graphics/CircleShape.hpp>
 
 #include "../Engine/Gameobject.h"
+#include "../Engine/Globals.h"
 
 class Fruit : public GameObject
 {
 public:
 	enum eFruitType
 	{
+		INVALID = -1,
 		FRUIT_TYPE_Cherry,
 		FRUIT_TYPE_Strawberry,
 		FRUIT_TYPE_Grapes,
@@ -30,7 +32,7 @@ public:
 		const char* m_Name;
 		sf::Color m_Colour;
 		float m_Radius;
-		int m_Points;
+		unsigned m_Points;
 	};
 
 	Fruit();
@@ -52,7 +54,9 @@ public:
 	const FruitDetails& GetCurrentFruitDetails() const;
 	static const FruitDetails& GetFruitDetails(eFruitType type);
 
-	void OnActivate(eFruitType type, sf::Vector2f position);
+	static eFruitType GenerateRandomType();
+
+	void OnActivate(eFruitType type, sf::Vector2f position = VECTOR2F_ZERO);
 	void Upgrade();
 
 private:

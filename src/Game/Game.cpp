@@ -16,33 +16,67 @@ Game::Game() :
 	{ TRANSFORMED_VECTOR(sf::Vector2f(1216.f, 0.f)), TRANSFORMED_VECTOR(sf::Vector2f(1280.f, 720.f)), VECTOR2F_LEFT },
 	{ TRANSFORMED_VECTOR(sf::Vector2f(0.f, 700.f)),  TRANSFORMED_VECTOR(sf::Vector2f(1280.f, 720.f)), VECTOR2F_UP } },
 	m_fruit(),
-	m_player()
+	m_player(),
+	m_currentPlayerFruitType(Fruit::GenerateRandomType()),
+	m_nextPlayerFruitType(Fruit::GenerateRandomType())
 {
-	m_fruit.ActivateObject(Fruit::FRUIT_TYPE_Cherry, sf::Vector2f{ static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre.x), 0.f });
+	m_player.SetPosition({ static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre.x), Fruit::GetFruitDetails(Fruit::FRUIT_TYPE_Watermelon).m_Radius + 20.f });
 }
 
 void Game::Update()
 {
 	m_player.Update();
 
+	constexpr static float PADDING = 10.f;
+
+	const bool playerHasFruit = m_currentPlayerFruitType != Fruit::eFruitType::INVALID;
+	if (playerHasFruit)
+	{
+		const float currentRadius = Fruit::GetFruitDetails(m_currentPlayerFruitType).m_Radius;
+		const float padding = TRANSFORMED_SCALAR(PADDING);
+
+		// Stop the player from going O.O.B.
+		if (m_player.GetPosition().x - currentRadius - padding < m_boundaries[Boundary::LEFT].m_BottomRight.x)
+		{
+			m_player.SetPosition(
+				sf::Vector2f{
+					m_boundaries[Boundary::LEFT].m_BottomRight.x + currentRadius + padding,
+					m_player.GetPosition().y
+				}
+			);
+		}
+		else if (m_player.GetPosition().x + currentRadius + padding > m_boundaries[Boundary::RIGHT].m_TopLeft.x)
+		{
+			m_player.SetPosition(
+				sf::Vector2f{
+					m_boundaries[Boundary::RIGHT].m_TopLeft.x - currentRadius - padding,
+					m_player.GetPosition().y
+				}
+			);
+		}
+	}
+
 	static float timer = 0.f;
 
-	// Every 5 seconds spawn a new fruit
+	if (m_player.WantsDrop() && playerHasFruit)
+	{
+		m_fruit.ActivateObject(m_currentPlayerFruitType, m_player.GetPosition());
+
+		m_currentPlayerFruitType = Fruit::INVALID;
+		timer = 0.f;
+		// TODO: Check for game over
+	}
+
+
+	// Wait a second before generating the next fruit after a drop
 	timer += Timer::Get().DeltaTime();
 
-	if (timer >= 1.f)
+	static constexpr float TIME_BEFORE_SPAWNING_NEW_FRUIT = 0.15f;
+
+	if (timer >= TIME_BEFORE_SPAWNING_NEW_FRUIT && !playerHasFruit)
 	{
-		const float left = m_boundaries[0].m_BottomRight.x + Fruit::GetFruitDetails(Fruit::FRUIT_TYPE_Watermelon).m_Radius;
-		const float right = m_boundaries[1].m_TopLeft.x - Fruit::GetFruitDetails(Fruit::FRUIT_TYPE_Watermelon).m_Radius;
-		const float diff = right - left;
-
-		for (int i = 0; i < 3; ++i)
-		{
-			Fruit* fruit = GenerateRandomFruit();
-			fruit->SetPosition(sf::Vector2f{ left + fruit->GetCurrentFruitDetails().m_Radius + 20.f + static_cast<float>(RNG.Next()) * diff, 0.f });
-		}
-
-		timer = 0.f;
+		m_currentPlayerFruitType = m_nextPlayerFruitType;
+		m_nextPlayerFruitType = Fruit::GenerateRandomType();
 	}
 
 	for (auto& fruit : m_fruit)
@@ -101,10 +135,18 @@ void Game::Render(sf::RenderWindow& window) const
 		fruit.Render(window);
 	}
 
+	if (m_currentPlayerFruitType != Fruit::INVALID)
+	{
+		Fruit dummy;
+		dummy.OnActivate(m_currentPlayerFruitType, m_player.GetPosition());
+		dummy.Render(window);
+	}
+
 #if !BUILD_MASTER
 	DrawText(std::to_string(static_cast<int>(Timer::Get().Fps())) + "fps", VECTOR2F_ZERO, window);
 
 	DrawText("Active fruit: " + std::to_string(static_cast<int>(m_fruit.GetInUseCount())), VECTOR2F_ZERO + sf::Vector2f{ 0.f, 100.f }, window);
+	DrawText("Points: " + std::to_string(m_player.GetPoints()), VECTOR2F_ZERO + sf::Vector2f{ 0.f, 200.f }, window);
 #endif
 }
 
@@ -182,7 +224,7 @@ void Game::HandleCollisions()
 
 	for (Fruit* upgradeFruit : fruitToBeUpgraded)
 	{
-		// TODO: Add points
+		m_player.AddPoints(upgradeFruit->GetCurrentFruitDetails().m_Points);
 		upgradeFruit->Upgrade();
 	}
 }
@@ -272,11 +314,4 @@ bool Game::CircleCircleCollision(Fruit& fruit, Fruit& otherFruit)
 	otherFruit.SetPosition(otherFruit.GetPosition() - correction);
 
 	return true;
-}
-
-Fruit* Game::GenerateRandomFruit()
-{
-	const auto randomType = static_cast<Fruit::eFruitType>(static_cast<int>(RNG.Next() * static_cast<double>(Fruit::FRUIT_TYPE_Apple)));
-
-	return m_fruit.ActivateObject(randomType);
 }

@@ -16,24 +16,33 @@ public:
 private:
 	struct Boundary
 	{
+		enum Placement
+		{
+			LEFT = 0,
+			RIGHT,
+			BOTTOM,
+			COUNT
+		};
+
 		sf::Vector2f m_TopLeft;
 		sf::Vector2f m_BottomRight;
 		sf::Vector2f m_Normal;
 		static float m_Damping;
 	};
 
-	Boundary m_boundaries[3];
+	Boundary m_boundaries[Boundary::COUNT];
 
 	ObjectPool<Fruit, 100> m_fruit;
 	Player m_player;
+
+	Fruit::eFruitType m_currentPlayerFruitType;
+	Fruit::eFruitType m_nextPlayerFruitType;
 
 	static void DrawText(const std::string& string, const sf::Vector2f& position, sf::RenderWindow& window);
 
 	void HandleCollisions();
 	static bool CircleRectCollision(Fruit& fruit, const Boundary& boundary);
 	static bool CircleCircleCollision(Fruit& fruit, Fruit& otherFruit);
-
-	Fruit* GenerateRandomFruit();
 };
 
 

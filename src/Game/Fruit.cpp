@@ -4,19 +4,19 @@
 #include "../Engine/Globals.h"
 
 
-constexpr static Fruit::FruitDetails LookupTable[Fruit::FRUIT_TYPE_MAX]
+constexpr static std::array< Fruit::FruitDetails, Fruit::FRUIT_TYPE_MAX> LookupTable
 {
-	{ Fruit::FRUIT_TYPE_Cherry, "Cherry", sf::Color(0xF20C3AFF), 10.f, },
-	{ Fruit::FRUIT_TYPE_Strawberry, "Strawberry", sf::Color(0xF51D00FF), 20.f, },
-	{ Fruit::FRUIT_TYPE_Grapes, "Grapes", sf::Color(0x750CF2FF), 30.f, },
-	{ Fruit::FRUIT_TYPE_Dekopon, "Dekopon", sf::Color(0xF4C860FF), 40.f, },
-	{ Fruit::FRUIT_TYPE_Orange, "Orange", sf::Color(0xF2690CFF), 45.f, },
-	{ Fruit::FRUIT_TYPE_Apple, "Apple", sf::Color(0x97F20CFF), 55.f, },
-	{ Fruit::FRUIT_TYPE_Pear, "Pear", sf::Color(0x0CF285FF), 75.f, },
-	{ Fruit::FRUIT_TYPE_Peach, "Peach", sf::Color(0xF5C6E5FF), 90.f, },
-	{ Fruit::FRUIT_TYPE_Pineapple, "Pineapple", sf::Color(0xFAF36BFF), 100.f, },
-	{ Fruit::FRUIT_TYPE_Melon, "Melon", sf::Color(0xB8F5A4FF), 125.f, },
-	{ Fruit::FRUIT_TYPE_Watermelon, "Watermelon", sf::Color(0x002801FF), 180.f, },
+	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Cherry, "Cherry", sf::Color(0xF20C3AFF), 10.f, 5u },
+	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Strawberry, "Strawberry", sf::Color(0xF51D00FF), 20.f, 20u },
+	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Grapes, "Grapes", sf::Color(0x750CF2FF), 30.f, 30u },
+	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Dekopon, "Dekopon", sf::Color(0xF4C860FF), 40.f, 50u },
+	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Orange, "Orange", sf::Color(0xF2690CFF), 45.f, 100u },
+	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Apple, "Apple", sf::Color(0x97F20CFF), 55.f, 150u },
+	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Pear, "Pear", sf::Color(0x0CF285FF), 75.f, 250u },
+	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Peach, "Peach", sf::Color(0xF5C6E5FF), 90.f, 300u },
+	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Pineapple, "Pineapple", sf::Color(0xFAF36BFF), 100.f, 400u },
+	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Melon, "Melon", sf::Color(0xB8F5A4FF), 125.f, 500u },
+	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Watermelon, "Watermelon", sf::Color(0x002801FF), 180.f, 1000u },
 };
 
 Fruit::Fruit() :
@@ -78,6 +78,11 @@ const Fruit::FruitDetails& Fruit::GetFruitDetails(eFruitType type)
 	return LookupTable[type];
 }
 
+Fruit::eFruitType Fruit::GenerateRandomType()
+{
+	return static_cast<eFruitType>(static_cast<int>(RNG.Next() * static_cast<double>(FRUIT_TYPE_Apple)));
+}
+
 // TODO: Work out some std::function magic to make this not be an overload
 // see if there's a way we can call a protected member m_onActivatedFunc from
 // OnActivate and pass through the params from the variadic ObjectPool class
@@ -109,6 +114,11 @@ void Fruit::InitialiseFruitDetails(const eFruitType type, const sf::Vector2f pos
 	m_currentType = type;
 
 	m_position = position;
+
+	m_acceleration = VECTOR2F_ZERO;
+	m_velocity = VECTOR2F_ZERO;
+
+	m_shape.setPosition(m_position);
 }
 
 void Fruit::Move()
