@@ -3,6 +3,8 @@
 
 #include <fstream>
 #include <string>
+#include "../Engine/TextureManager.h"
+
 #define HOXML_IMPLEMENTATION
 #include "../Libs/hoxml.h"
 
@@ -47,7 +49,7 @@ bool FruitManager::Init()
 
 	hoxml_init(hoxml_context, buffer, content_length * 2);
 
-	const static Details EMPTY = { INVALID, "NULL", sf::Color::Magenta, -1.f, 0 };
+	const static Details EMPTY = { INVALID, "NULL", "NULL", sf::Color::Magenta, -1.f, 0 };
 
 	Details currentDetails = EMPTY;
 
@@ -104,7 +106,25 @@ bool FruitManager::Init()
 					}
 					else if (strcmp("texture", hoxml_context->tag) == 0)
 					{
-						// TODO
+						std::filesystem::path filePath = std::filesystem::u8path(hoxml_context->content);
+
+						// Grab the texture name
+						if (!std::filesystem::exists(filePath))
+						{
+							printf(" Texture: %s does not exist!\n", hoxml_context->content);
+							return false;
+						}
+
+						std::string textureName = filePath.filename().string();
+
+						// Load the texture into the TextureManager
+						if (!TextureManager::Get().LoadTexture(textureName, filePath))
+						{
+							printf("Failed to load texture: %s", hoxml_context->content);
+							return false;
+						}
+
+						currentDetails.m_TextureName = textureName;
 					}
 					else if (strcmp("colour", hoxml_context->tag) == 0)
 					{

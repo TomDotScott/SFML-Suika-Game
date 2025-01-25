@@ -6,6 +6,7 @@
 
 #include "Fruit.h"
 #include "FruitManager.h"
+#include "../Engine/TextureManager.h"
 #include "../Engine/Globals.h"
 #include "../Engine/Timer.h"
 
@@ -137,14 +138,15 @@ void Game::Render(sf::RenderWindow& window) const
 			window
 		);
 #endif
-		fruit.Render(window);
+
+		DrawFruit(fruit, window);
 	}
 
 	if (m_currentPlayerFruitType != FruitManager::eType::INVALID)
 	{
 		Fruit dummy;
 		dummy.OnActivate(m_currentPlayerFruitType, m_player.GetPosition());
-		dummy.Render(window);
+		DrawFruit(dummy, window);
 	}
 
 #if !BUILD_MASTER
@@ -167,6 +169,32 @@ void Game::DrawText(const std::string& string, const sf::Vector2f& position, sf:
 	window.draw(text);
 }
 
+void Game::DrawFruit(const Fruit& fruit, sf::RenderWindow& window)
+{
+	const sf::Texture* texture = TEXTUREMANAGER.GetTexture(fruit.GetCurrentFruitDetails().m_TextureName);
+
+	const float radius = fruit.GetRadius();
+	const sf::Vector2f scaleFactor = static_cast<sf::Vector2f>(texture->getSize()) / (radius * 2);
+
+	sf::Sprite sprite(*texture);
+
+	sprite.setScale({ 1.f / scaleFactor.x, 1.f / scaleFactor.y });
+	sprite.setOrigin({ sprite.getLocalBounds().size.x / 2.f, sprite.getLocalBounds().size.y / 2.f });
+	sprite.setPosition(fruit.GetPosition());
+
+#if BUILD_DEBUG
+	sf::CircleShape circle(radius);
+	circle.setOrigin({ circle.getGlobalBounds().size.x / 2.f, circle.getGlobalBounds().size.y / 2.f });
+	circle.setPosition(fruit.GetPosition());
+	circle.setOutlineColor(fruit.GetCurrentFruitDetails().m_Colour);
+	circle.setOutlineThickness(3.f);
+	circle.setFillColor(sf::Color::Transparent);
+	window.draw(circle);
+#endif
+
+	window.draw(sprite);
+}
+
 void Game::HandleCollisions()
 {
 	std::set<Fruit*> fruitToBeRemoved;
@@ -174,18 +202,21 @@ void Game::HandleCollisions()
 
 	for (Fruit& fruit : m_fruit)
 	{
-		const bool fruitIsRemoved = fruitToBeRemoved.find(&fruit) != fruitToBeRemoved.end();
-
-		if (fruitIsRemoved)
+		// Is the current fruit in the "to be removed" list?
+		if (fruitToBeRemoved.find(&fruit) != fruitToBeRemoved.end())
 		{
 			continue;
 		}
 
 		for (Fruit& otherFruit : m_fruit)
 		{
-			const bool otherFruitIsRemoved = fruitToBeRemoved.find(&otherFruit) != fruitToBeRemoved.end();
+			if (fruit.GetID() == otherFruit.GetID())
+			{
+				continue;
+			}
 
-			if (otherFruitIsRemoved || fruit.GetID() == otherFruit.GetID())
+			// Is the other fruit in the "to be removed" list?
+			if (fruitToBeRemoved.find(&otherFruit) != fruitToBeRemoved.end())
 			{
 				continue;
 			}

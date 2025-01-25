@@ -12,7 +12,6 @@ GameObject::GameObject(const sf::Vector2f position) :
 	m_id(++CURRENT_ID)
 {
 	SetPosition(position);
-	m_drawables.reserve(100);
 }
 
 void GameObject::OnActivate()
@@ -23,19 +22,6 @@ void GameObject::OnActivate()
 void GameObject::OnDeactivate()
 {
 	m_isActive = false;
-}
-
-void GameObject::Render(sf::RenderWindow& window) const
-{
-	if (!m_isActive)
-	{
-		return;
-	}
-
-	for (const sf::Drawable* drawable : m_drawables)
-	{
-		window.draw(*drawable);
-	}
 }
 
 void GameObject::SetPosition(const sf::Vector2f& position)

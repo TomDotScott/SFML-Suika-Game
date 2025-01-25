@@ -28,6 +28,7 @@ public:
 	{
 		eType m_Type;
 		std::string m_Name;
+		std::string m_TextureName;
 		sf::Color m_Colour;
 		float m_Radius;
 		unsigned m_Points;

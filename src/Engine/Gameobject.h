@@ -17,8 +17,6 @@ public:
 
 	void OnDeactivate();
 
-	void Render(sf::RenderWindow& window) const;
-
 	const sf::Vector2f& GetPosition() const { return m_position; }
 	sf::Vector2f GetPosition() { return m_position; }
 	void SetPosition(const sf::Vector2f& position);
@@ -29,8 +27,6 @@ public:
 
 protected:
 	sf::Vector2f m_position;
-
-	std::vector<sf::Drawable*> m_drawables;
 
 private:
 	bool m_isActive;

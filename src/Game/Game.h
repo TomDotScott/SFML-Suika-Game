@@ -40,6 +40,8 @@ private:
 
 	static void DrawText(const std::string& string, const sf::Vector2f& position, sf::RenderWindow& window);
 
+	static void DrawFruit(const Fruit& fruit, sf::RenderWindow& window);
+
 	void HandleCollisions();
 	static bool CircleRectCollision(Fruit& fruit, const Boundary& boundary);
 	static bool CircleCircleCollision(Fruit& fruit, Fruit& otherFruit);

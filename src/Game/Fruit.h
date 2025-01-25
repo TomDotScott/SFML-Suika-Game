@@ -32,15 +32,13 @@ public:
 	void Upgrade();
 
 private:
-	// TODO: Make this a texture
-	sf::CircleShape m_shape;
 	FruitManager::eType m_currentType;
 
 	sf::Vector2f m_velocity;
 	sf::Vector2f m_acceleration;
 	float m_mass;
 
-	void InitialiseFruitDetails(FruitManager::eType type, sf::Vector2f position);
+	void Init(FruitManager::eType type, sf::Vector2f position);
 	void Move();
 };
 
