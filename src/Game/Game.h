@@ -35,8 +35,8 @@ private:
 	ObjectPool<Fruit, 100> m_fruit;
 	Player m_player;
 
-	Fruit::eFruitType m_currentPlayerFruitType;
-	Fruit::eFruitType m_nextPlayerFruitType;
+	FruitManager::eType m_currentPlayerFruitType;
+	FruitManager::eType m_nextPlayerFruitType;
 
 	static void DrawText(const std::string& string, const sf::Vector2f& position, sf::RenderWindow& window);
 

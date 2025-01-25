@@ -1,10 +1,11 @@
 #include "Game.h"
-
+#include <fstream>
 #include <iostream>
 #include <set>
 #include <SFML/Graphics.hpp>
 
 #include "Fruit.h"
+#include "FruitManager.h"
 #include "../Engine/Globals.h"
 #include "../Engine/Timer.h"
 
@@ -17,10 +18,14 @@ Game::Game() :
 	{ TRANSFORMED_VECTOR(sf::Vector2f(0.f, 700.f)),  TRANSFORMED_VECTOR(sf::Vector2f(1280.f, 720.f)), VECTOR2F_UP } },
 	m_fruit(),
 	m_player(),
-	m_currentPlayerFruitType(Fruit::GenerateRandomType()),
-	m_nextPlayerFruitType(Fruit::GenerateRandomType())
+	m_currentPlayerFruitType(FRUIT_MANAGER->GenerateRandomType()),
+	m_nextPlayerFruitType(FRUIT_MANAGER->GenerateRandomType())
 {
-	m_player.SetPosition({ static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre.x), Fruit::GetFruitDetails(Fruit::FRUIT_TYPE_Watermelon).m_Radius + 20.f });
+	m_player.SetPosition({
+		static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre.x),
+		FRUIT_MANAGER->GetFruitDetails(FruitManager::eType::FRUIT_TYPE_Watermelon).m_Radius + 20.f
+		}
+	);
 }
 
 void Game::Update()
@@ -29,10 +34,10 @@ void Game::Update()
 
 	constexpr static float PADDING = 10.f;
 
-	const bool playerHasFruit = m_currentPlayerFruitType != Fruit::eFruitType::INVALID;
+	const bool playerHasFruit = m_currentPlayerFruitType != FruitManager::eType::INVALID;
 	if (playerHasFruit)
 	{
-		const float currentRadius = Fruit::GetFruitDetails(m_currentPlayerFruitType).m_Radius;
+		const float currentRadius = FRUIT_MANAGER->GetFruitDetails(m_currentPlayerFruitType).m_Radius;
 		const float padding = TRANSFORMED_SCALAR(PADDING);
 
 		// Stop the player from going O.O.B.
@@ -62,7 +67,7 @@ void Game::Update()
 	{
 		m_fruit.ActivateObject(m_currentPlayerFruitType, m_player.GetPosition());
 
-		m_currentPlayerFruitType = Fruit::INVALID;
+		m_currentPlayerFruitType = FruitManager::eType::INVALID;
 		timer = 0.f;
 		// TODO: Check for game over
 	}
@@ -76,7 +81,7 @@ void Game::Update()
 	if (timer >= TIME_BEFORE_SPAWNING_NEW_FRUIT && !playerHasFruit)
 	{
 		m_currentPlayerFruitType = m_nextPlayerFruitType;
-		m_nextPlayerFruitType = Fruit::GenerateRandomType();
+		m_nextPlayerFruitType = FRUIT_MANAGER->GenerateRandomType();
 	}
 
 	for (auto& fruit : m_fruit)
@@ -117,7 +122,7 @@ void Game::Render(sf::RenderWindow& window) const
 			"Mass:%.2f\n"
 			"Acc{%.3f,%.3f}\n"
 			"Pos{%.3f,%.3f}",
-			fruit.GetCurrentFruitDetails().m_Name,
+			fruit.GetCurrentFruitDetails().m_Name.c_str(),
 			fruit.GetID(),
 			fruit.GetVelocity().x, fruit.GetVelocity().y,
 			fruit.GetMass(),
@@ -135,7 +140,7 @@ void Game::Render(sf::RenderWindow& window) const
 		fruit.Render(window);
 	}
 
-	if (m_currentPlayerFruitType != Fruit::INVALID)
+	if (m_currentPlayerFruitType != FruitManager::eType::INVALID)
 	{
 		Fruit dummy;
 		dummy.OnActivate(m_currentPlayerFruitType, m_player.GetPosition());
@@ -186,7 +191,7 @@ void Game::HandleCollisions()
 			}
 
 			const bool areFruitTheSame = fruit.GetCurrentFruitDetails().m_Type == otherFruit.GetCurrentFruitDetails().m_Type;
-			const bool isWatermelon = fruit.GetCurrentFruitDetails().m_Type == Fruit::FRUIT_TYPE_Watermelon;
+			const bool isWatermelon = fruit.GetCurrentFruitDetails().m_Type == FruitManager::eType::FRUIT_TYPE_Watermelon;
 
 			if (CircleCircleCollision(fruit, otherFruit)
 				&& areFruitTheSame

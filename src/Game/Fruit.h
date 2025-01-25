@@ -3,38 +3,13 @@
 
 #include <SFML/Graphics/CircleShape.hpp>
 
+#include "FruitManager.h"
 #include "../Engine/Gameobject.h"
 #include "../Engine/Globals.h"
 
-class Fruit : public GameObject
+class Fruit final : public GameObject
 {
 public:
-	enum eFruitType
-	{
-		INVALID = -1,
-		FRUIT_TYPE_Cherry,
-		FRUIT_TYPE_Strawberry,
-		FRUIT_TYPE_Grapes,
-		FRUIT_TYPE_Dekopon,
-		FRUIT_TYPE_Orange,
-		FRUIT_TYPE_Apple,
-		FRUIT_TYPE_Pear,
-		FRUIT_TYPE_Peach,
-		FRUIT_TYPE_Pineapple,
-		FRUIT_TYPE_Melon,
-		FRUIT_TYPE_Watermelon,
-		FRUIT_TYPE_MAX
-	};
-
-	struct FruitDetails
-	{
-		eFruitType m_Type;
-		const char* m_Name;
-		sf::Color m_Colour;
-		float m_Radius;
-		unsigned m_Points;
-	};
-
 	Fruit();
 
 	~Fruit() override = default;
@@ -51,24 +26,21 @@ public:
 	float GetMass() const;
 	sf::Vector2f GetAcceleration() const;
 
-	const FruitDetails& GetCurrentFruitDetails() const;
-	static const FruitDetails& GetFruitDetails(eFruitType type);
+	const FruitManager::Details& GetCurrentFruitDetails() const;
 
-	static eFruitType GenerateRandomType();
-
-	void OnActivate(eFruitType type, sf::Vector2f position = VECTOR2F_ZERO);
+	void OnActivate(FruitManager::eType type, sf::Vector2f position = VECTOR2F_ZERO);
 	void Upgrade();
 
 private:
 	// TODO: Make this a texture
 	sf::CircleShape m_shape;
-	eFruitType m_currentType;
+	FruitManager::eType m_currentType;
 
 	sf::Vector2f m_velocity;
 	sf::Vector2f m_acceleration;
 	float m_mass;
 
-	void InitialiseFruitDetails(eFruitType type, sf::Vector2f position);
+	void InitialiseFruitDetails(FruitManager::eType type, sf::Vector2f position);
 	void Move();
 };
 

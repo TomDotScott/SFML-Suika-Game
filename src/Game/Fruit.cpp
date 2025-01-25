@@ -3,25 +3,9 @@
 #include "../Engine/Timer.h"
 #include "../Engine/Globals.h"
 
-
-constexpr static std::array< Fruit::FruitDetails, Fruit::FRUIT_TYPE_MAX> LookupTable
-{
-	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Cherry, "Cherry", sf::Color(0xF20C3AFF), 10.f, 5u },
-	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Strawberry, "Strawberry", sf::Color(0xF51D00FF), 20.f, 20u },
-	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Grapes, "Grapes", sf::Color(0x750CF2FF), 30.f, 30u },
-	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Dekopon, "Dekopon", sf::Color(0xF4C860FF), 40.f, 50u },
-	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Orange, "Orange", sf::Color(0xF2690CFF), 45.f, 100u },
-	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Apple, "Apple", sf::Color(0x97F20CFF), 55.f, 150u },
-	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Pear, "Pear", sf::Color(0x0CF285FF), 75.f, 250u },
-	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Peach, "Peach", sf::Color(0xF5C6E5FF), 90.f, 300u },
-	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Pineapple, "Pineapple", sf::Color(0xFAF36BFF), 100.f, 400u },
-	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Melon, "Melon", sf::Color(0xB8F5A4FF), 125.f, 500u },
-	Fruit::FruitDetails { Fruit::FRUIT_TYPE_Watermelon, "Watermelon", sf::Color(0x002801FF), 180.f, 1000u },
-};
-
 Fruit::Fruit() :
 	GameObject(),
-	m_currentType(FRUIT_TYPE_Cherry),
+	m_currentType(FruitManager::FRUIT_TYPE_Cherry),
 	m_mass(0.f)
 {
 	InitialiseFruitDetails(m_currentType, sf::Vector2f(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre));
@@ -68,25 +52,15 @@ sf::Vector2f Fruit::GetAcceleration() const
 	return m_acceleration;
 }
 
-const Fruit::FruitDetails& Fruit::GetCurrentFruitDetails() const
+const FruitManager::Details& Fruit::GetCurrentFruitDetails() const
 {
-	return LookupTable[m_currentType];
-}
-
-const Fruit::FruitDetails& Fruit::GetFruitDetails(eFruitType type)
-{
-	return LookupTable[type];
-}
-
-Fruit::eFruitType Fruit::GenerateRandomType()
-{
-	return static_cast<eFruitType>(static_cast<int>(RNG.Next() * static_cast<double>(FRUIT_TYPE_Apple)));
+	return FRUIT_MANAGER->GetFruitDetails(m_currentType);
 }
 
 // TODO: Work out some std::function magic to make this not be an overload
 // see if there's a way we can call a protected member m_onActivatedFunc from
 // OnActivate and pass through the params from the variadic ObjectPool class
-void Fruit::OnActivate(const eFruitType type, const sf::Vector2f position)
+void Fruit::OnActivate(const FruitManager::eType type, const sf::Vector2f position)
 {
 	GameObject::OnActivate();
 
@@ -95,19 +69,21 @@ void Fruit::OnActivate(const eFruitType type, const sf::Vector2f position)
 
 void Fruit::Upgrade()
 {
-	m_currentType = static_cast<eFruitType>(std::min(static_cast<int>(m_currentType) + 1, static_cast<int>(FRUIT_TYPE_Watermelon)));
+	m_currentType = static_cast<FruitManager::eType>(std::min(static_cast<int>(m_currentType) + 1, static_cast<int>(FruitManager::FRUIT_TYPE_Watermelon)));
 	InitialiseFruitDetails(m_currentType, m_position);
 }
 
-void Fruit::InitialiseFruitDetails(const eFruitType type, const sf::Vector2f position)
+void Fruit::InitialiseFruitDetails(const FruitManager::eType type, const sf::Vector2f position)
 {
-	const float radius = TRANSFORMED_SCALAR(LookupTable[type].m_Radius);
+	const FruitManager::Details& fruitDetails = FRUIT_MANAGER->GetFruitDetails(type);
+
+	const float radius = TRANSFORMED_SCALAR(fruitDetails.m_Radius);
 
 	m_mass = radius * TRANSFORMED_SCALAR(5.f);
 
 	m_shape.setRadius(radius);
 
-	m_shape.setFillColor(LookupTable[type].m_Colour);
+	m_shape.setFillColor(fruitDetails.m_Colour);
 
 	m_shape.setOrigin({ m_shape.getGlobalBounds().size.x / 2.f, m_shape.getGlobalBounds().size.y / 2.f });
 
