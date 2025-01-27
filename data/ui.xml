@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<ui>
+    <Sprite>
+        <name>Box</name>
+        <position x="424" y="84"></position>
+        <texture>Sprites/UI/Box.png</texture>
+        <layer>midground</layer>
+    </Sprite>
+    <Sprite>
+        <name>Background</name>
+        <position x="0" y="0"></position>
+        <texture>Sprites/UI/Background.png</texture>
+        <layer>background</layer>
+    </Sprite>
+    <Sprite>
+        <name>BoxTopper</name>
+        <position x="425" y="135"></position>
+        <texture>Sprites/UI/BoxTop.png</texture>
+        <layer>foreground</layer>
+    </Sprite>
+</ui>

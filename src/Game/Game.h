@@ -1,5 +1,8 @@
 #ifndef GAME_H
 #define GAME_H
+#include <set>
+#include <SFML/Graphics/Sprite.hpp>
+
 #include "Fruit.h"
 #include "Player.h"
 #include "../Engine/ObjectPool.h"
@@ -8,6 +11,7 @@ class Game
 {
 public:
 	Game();
+	~Game();
 
 	void Update();
 
@@ -37,6 +41,16 @@ private:
 
 	FruitManager::eType m_currentPlayerFruitType;
 	FruitManager::eType m_nextPlayerFruitType;
+
+	// TODO: Make this a lot better!
+	// Create a data structure that can scale we have UI that changes over time
+	// And be reused for other projects
+	std::unordered_map <std::string, sf::Sprite*> m_uiElements;
+	std::set<std::string> m_backgroundElements;
+	std::set<std::string> m_midgroundElements;
+	std::set<std::string> m_foregroundElements;
+
+	bool LoadUI();
 
 	static void DrawText(const std::string& string, const sf::Vector2f& position, sf::RenderWindow& window);
 

@@ -9,14 +9,16 @@
 #include "../Engine/TextureManager.h"
 #include "../Engine/Globals.h"
 #include "../Engine/Timer.h"
+#include "../Libs/hoxml.h"
 
 float Game::Boundary::m_Damping = 0.8f;
 
 Game::Game() :
+	// TODO: Make this data be read from a file, I am fed up of editing stuff in C++ files
 	m_boundaries{
-	{ TRANSFORMED_VECTOR(sf::Vector2f(0.f, 0.f)),    TRANSFORMED_VECTOR(sf::Vector2f(64.f, 720.f)), VECTOR2F_RIGHT},
-	{ TRANSFORMED_VECTOR(sf::Vector2f(1216.f, 0.f)), TRANSFORMED_VECTOR(sf::Vector2f(1280.f, 720.f)), VECTOR2F_LEFT },
-	{ TRANSFORMED_VECTOR(sf::Vector2f(0.f, 700.f)),  TRANSFORMED_VECTOR(sf::Vector2f(1280.f, 720.f)), VECTOR2F_UP } },
+	{ TRANSFORMED_VECTOR(sf::Vector2f(424.f, 84.f)),    TRANSFORMED_VECTOR(sf::Vector2f(455.f, 696.f)), VECTOR2F_RIGHT},
+	{ TRANSFORMED_VECTOR(sf::Vector2f(825.f, 84.f)), TRANSFORMED_VECTOR(sf::Vector2f(856.f, 696.f)), VECTOR2F_LEFT },
+	{ TRANSFORMED_VECTOR(sf::Vector2f(424.f, 665.f)),  TRANSFORMED_VECTOR(sf::Vector2f(856.f, 696.f)), VECTOR2F_UP } },
 	m_fruit(),
 	m_player(),
 	m_currentPlayerFruitType(FRUIT_MANAGER->GenerateRandomType()),
@@ -24,9 +26,20 @@ Game::Game() :
 {
 	m_player.SetPosition({
 		static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre.x),
-		FRUIT_MANAGER->GetFruitDetails(FruitManager::eType::FRUIT_TYPE_Watermelon).m_Radius + 20.f
+		FRUIT_MANAGER->GetFruitDetails(FruitManager::eType::FRUIT_TYPE_Apple).m_Radius + 20.f
 		}
 	);
+
+	LoadUI();
+}
+
+Game::~Game()
+{
+	for (auto& [name, sprite] : m_uiElements)
+	{
+		delete sprite;
+		sprite = nullptr;
+	}
 }
 
 void Game::Update()
@@ -101,6 +114,12 @@ void Game::Update()
 
 void Game::Render(sf::RenderWindow& window) const
 {
+	// Draw the background items first
+	for (const auto& uiElementName : m_backgroundElements)
+	{
+		window.draw(*m_uiElements.at(uiElementName));
+	}
+
 #if !BUILD_MASTER
 	for (const auto& [topLeft, bottomRight, normal] : m_boundaries)
 	{
@@ -111,6 +130,13 @@ void Game::Render(sf::RenderWindow& window) const
 	}
 #endif
 
+	// Then the midground stuff
+	for (const auto& uiElementName : m_midgroundElements)
+	{
+		window.draw(*m_uiElements.at(uiElementName));
+	}
+
+	// Then the game elements
 	for (const auto& fruit : m_fruit)
 	{
 #if !BUILD_MASTER
@@ -149,12 +175,218 @@ void Game::Render(sf::RenderWindow& window) const
 		DrawFruit(dummy, window);
 	}
 
+	// Then, in front of everything, the foreground stuff
+	for (const auto& uiElementName : m_foregroundElements)
+	{
+		window.draw(*m_uiElements.at(uiElementName));
+	}
+
 #if !BUILD_MASTER
 	DrawText(std::to_string(static_cast<int>(Timer::Get().Fps())) + "fps", VECTOR2F_ZERO, window);
 
 	DrawText("Active fruit: " + std::to_string(static_cast<int>(m_fruit.GetInUseCount())), VECTOR2F_ZERO + sf::Vector2f{ 0.f, 100.f }, window);
 	DrawText("Points: " + std::to_string(m_player.GetPoints()), VECTOR2F_ZERO + sf::Vector2f{ 0.f, 200.f }, window);
 #endif
+}
+
+// TODO: Refactor this, it's huge and horrible
+bool Game::LoadUI()
+{
+	std::string line, text;
+	std::ifstream in("ui.xml");
+	while (std::getline(in, line))
+	{
+		text += line + "\n";
+	}
+
+	if (text.empty())
+	{
+		return false;
+	}
+
+	const char* content = text.c_str();
+
+	size_t content_length = strlen(content);
+
+	hoxml_context_t hoxml_context[1];
+	auto buffer = static_cast<char*>(malloc(content_length * 2));
+
+	hoxml_init(hoxml_context, buffer, content_length * 2);
+
+	// TODO: Replace with a proper UI implementation in the Engine side
+	struct UIElement
+	{
+		enum Layer : std::int8_t
+		{
+			NONE = -1,
+			BACKGROUND,
+			MIDGROUND,
+			FOREGROUND
+		} layer;
+		std::string name;
+		sf::Vector2f position;
+		sf::Sprite* sprite;
+	};
+
+	const static UIElement EMPTY = { UIElement::Layer::NONE,"INVALID", VECTOR2F_ZERO, nullptr };
+
+	UIElement currentDetails = EMPTY;
+
+	// Loop until the "end of document" code is returned
+	hoxml_code_t code = hoxml_parse(hoxml_context, content, content_length);
+	while (code != HOXML_END_OF_DOCUMENT)
+	{
+		switch (code)
+		{
+		case HOXML_ELEMENT_BEGIN:
+#if BUILD_DEBUG
+			printf(" Opened <%s>\n", hoxml_context->tag);
+#endif
+			break;
+		case HOXML_ELEMENT_END:
+			if (hoxml_context->tag != nullptr)
+			{
+				if (strcmp("Sprite", hoxml_context->tag) == 0)
+				{
+					if (!currentDetails.sprite)
+					{
+						printf(" Closing tag found and no sprite was assigned to %s!\n", currentDetails.name.c_str());
+						return false;
+					}
+
+					// Assign the position
+					currentDetails.sprite->setPosition(currentDetails.position);
+
+					m_uiElements[currentDetails.name] = currentDetails.sprite;
+
+					switch (currentDetails.layer)
+					{
+					case UIElement::NONE:
+						printf(" No layer set for %s\n", currentDetails.name.c_str());
+						return false;
+					case UIElement::BACKGROUND:
+						m_backgroundElements.insert(currentDetails.name);
+						break;
+					case UIElement::MIDGROUND:
+						m_midgroundElements.insert(currentDetails.name);
+						break;
+					case UIElement::FOREGROUND:
+						m_foregroundElements.insert(currentDetails.name);
+						break;
+					}
+
+					// Set to empty so we can start again
+					currentDetails = EMPTY;
+				}
+
+#if BUILD_DEBUG
+				printf(" Closed %s\n", hoxml_context->tag);
+#endif
+			}
+
+			if (hoxml_context->content != nullptr)
+			{
+				/* Check the content to see if it only contains whitespace */
+				bool isEmpty = true;
+				const char* character = hoxml_context->content;
+
+				while (*character != '\0')
+				{
+					// If not a whitespace or newline
+					if (*character != ' ' && *character != '\t' && *character != '\n' && *character != '\r')
+					{
+						isEmpty = false;
+						break;
+					}
+					character++;
+				}
+
+				// If the content string contains more than just whitespace, we want to parse it
+				if (!isEmpty)
+				{
+					if (strcmp("name", hoxml_context->tag) == 0)
+					{
+						currentDetails.name = hoxml_context->content;
+					}
+					else if (strcmp("layer", hoxml_context->tag) == 0)
+					{
+						if (strcmp("foreground", hoxml_context->content) == 0)
+						{
+							currentDetails.layer = UIElement::FOREGROUND;
+						}
+						else if (strcmp("midground", hoxml_context->content) == 0)
+						{
+							currentDetails.layer = UIElement::MIDGROUND;
+						}
+						else if (strcmp("background", hoxml_context->content) == 0)
+						{
+							currentDetails.layer = UIElement::BACKGROUND;
+						}
+						else
+						{
+							printf(" Unknown layer: %s!\n", hoxml_context->content);
+							return false;
+						}
+					}
+					else if (strcmp("texture", hoxml_context->tag) == 0)
+					{
+						std::filesystem::path filePath = std::filesystem::u8path(hoxml_context->content);
+
+						// Grab the texture name
+						if (!std::filesystem::exists(filePath))
+						{
+							printf(" Texture: %s does not exist!\n", hoxml_context->content);
+							return false;
+						}
+
+						std::string textureName = filePath.filename().string();
+
+						// Load the texture into the TextureManager
+						if (!TEXTUREMANAGER.LoadTexture(textureName, filePath))
+						{
+							printf("Failed to load texture: %s", hoxml_context->content);
+							return false;
+						}
+
+						sf::Texture* texture = TEXTUREMANAGER.GetTexture(textureName);
+						const sf::Vector2f scaleFactor = {
+							static_cast<float>(texture->getSize().x) / TRANSFORMED_SCALAR(texture->getSize().x),
+							static_cast<float>(texture->getSize().y) / TRANSFORMED_SCALAR(texture->getSize().y)
+						};
+
+
+						currentDetails.sprite = new sf::Sprite(*texture);
+						currentDetails.sprite->setScale({ 1.f / scaleFactor.x, 1.f / scaleFactor.y });
+
+					}
+					printf(" Closed <%s> with content \"%s\"\n", hoxml_context->tag, hoxml_context->content);
+				}
+			}
+			break;
+		case HOXML_ATTRIBUTE:
+			if (strcmp("position", hoxml_context->tag) == 0)
+			{
+				if (strcmp("x", hoxml_context->attribute) == 0)
+				{
+					currentDetails.position.x = TRANSFORMED_SCALAR(std::stof(hoxml_context->value));
+				}
+				else if (strcmp("y", hoxml_context->attribute) == 0)
+				{
+					currentDetails.position.y = TRANSFORMED_SCALAR(std::stof(hoxml_context->value));
+				}
+			}
+
+#if BUILD_DEBUG
+			printf(" Attribute \"%s\" of <%s> has value: %s\n", hoxml_context->attribute, hoxml_context->tag, hoxml_context->value);
+#endif
+			break;
+		}
+
+		code = hoxml_parse(hoxml_context, content, content_length);
+	}
+
+	free(buffer);
+	return true;
 }
 
 void Game::DrawText(const std::string& string, const sf::Vector2f& position, sf::RenderWindow& window)

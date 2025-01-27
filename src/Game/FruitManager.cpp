@@ -60,8 +60,9 @@ bool FruitManager::Init()
 		switch (code)
 		{
 		case HOXML_ELEMENT_BEGIN:
-
+#if BUILD_DEBUG
 			printf(" Opened <%s>\n", hoxml_context->tag);
+#endif
 			break;
 		case HOXML_ELEMENT_END:
 			if (hoxml_context->tag != nullptr)
@@ -72,8 +73,9 @@ bool FruitManager::Init()
 
 					currentDetails = EMPTY;
 				}
-
+#if BUILD_DEBUG
 				printf(" Closed %s\n", hoxml_context->tag);
+#endif
 			}
 
 			if (hoxml_context->content != nullptr)
@@ -147,13 +149,18 @@ bool FruitManager::Init()
 						currentDetails.m_Points = static_cast<unsigned>(atoi(hoxml_context->content));
 					}
 
+#if BUILD_DEBUG
 					printf(" Closed <%s> with content \"%s\"\n", hoxml_context->tag, hoxml_context->content);
+#endif
 				}
 			}
 			break;
 		case HOXML_ATTRIBUTE:
+#if BUILD_DEBUG
 			printf(" Attribute \"%s\" of <%s> has value: %s\n", hoxml_context->attribute, hoxml_context->tag,
 				hoxml_context->value);
+#endif
+
 			break;
 		}
 
