@@ -42,16 +42,6 @@ private:
 	FruitManager::eType m_currentPlayerFruitType;
 	FruitManager::eType m_nextPlayerFruitType;
 
-	// TODO: Make this a lot better!
-	// Create a data structure that can scale we have UI that changes over time
-	// And be reused for other projects
-	std::unordered_map <std::string, sf::Sprite*> m_uiElements;
-	std::set<std::string> m_backgroundElements;
-	std::set<std::string> m_midgroundElements;
-	std::set<std::string> m_foregroundElements;
-
-	bool LoadUI();
-
 	static void DrawText(const std::string& string, const sf::Vector2f& position, sf::RenderWindow& window);
 
 	static void DrawFruit(const Fruit& fruit, sf::RenderWindow& window);
