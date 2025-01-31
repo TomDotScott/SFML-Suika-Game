@@ -3,7 +3,7 @@
 #include "../Engine/Gameobject.h"
 #include "../Engine/InputMapper.h"
 
-class Player final : public GameObject
+class Player final : public GameObject, Updatable
 {
 public:
 	Player();

@@ -7,7 +7,7 @@
 #include "../Engine/Gameobject.h"
 #include "../Engine/Globals.h"
 
-class Fruit final : public GameObject
+class Fruit final : public GameObject, Updatable
 {
 public:
 	Fruit();

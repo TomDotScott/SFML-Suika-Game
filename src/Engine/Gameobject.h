@@ -4,14 +4,20 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
 
+class Updatable
+{
+public:
+	virtual ~Updatable() = default;
+
+	virtual void Update() = 0;
+};
+
 class GameObject
 {
 public:
 	explicit GameObject(sf::Vector2f position = { 0.f, 0.f });
 
 	virtual ~GameObject() = default;
-
-	virtual void Update() = 0;
 
 	void OnActivate();
 
