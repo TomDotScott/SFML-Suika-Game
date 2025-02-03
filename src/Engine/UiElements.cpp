@@ -1,6 +1,7 @@
 #include "UiElements.h"
 
 #include <fstream>
+#include <SFML/Graphics/Font.hpp>
 
 #include "Globals.h"
 #include "TextureManager.h"
@@ -20,6 +21,9 @@ namespace
 		}
 		return true;
 	}
+
+	// I don't like how this is needed for sf::Text to compile
+	sf::Font defaultFont("fonts/FiraCode-Regular.ttf");
 }
 
 bool UiElement::Load(hoxml_context_t*& context, const char* xml, const size_t xmlLength)
@@ -117,6 +121,13 @@ bool UiElement::ParseAttribute(hoxml_context_t*& context)
 	printf(" UiElement: Attribute \"%s\" of <%s> has value: %s\n", context->attribute, context->tag, context->value);
 #endif
 	return false;
+}
+
+void UiSprite::SetPosition(const sf::Vector2f& position)
+{
+	GameObject::SetPosition(position);
+
+	m_sprite->setPosition(m_position);
 }
 
 bool UiSprite::ParseEndElement(hoxml_context_t*& context)
@@ -235,6 +246,153 @@ bool UiSprite::ParseAttribute(hoxml_context_t*& context)
 	return UiElement::ParseAttribute(context);
 }
 
+UiText::UiText() :
+	UiElement(),
+	m_text(defaultFont)
+{
+	// All text drawn on top
+	// TODO: Make this more sophisticated... I need to be able to support arbitrary placement of elements in the XML otherwise we are at the mercy of std::hash!
+	SetLayer(eLayer::FOREGROUND);
+}
+
+void UiText::SetTextSize(const unsigned size)
+{
+	m_text.setCharacterSize(size);
+}
+
+void UiText::SetPosition(const sf::Vector2f& position)
+{
+	GameObject::SetPosition(position);
+	m_text.setPosition(position);
+}
+
+bool UiText::ParseEndElement(hoxml_context_t*& context)
+{
+	if (!context)
+	{
+		return false;
+	}
+
+	if (context->tag && strcmp("Text", context->tag) == 0)
+	{
+		if (!m_string.empty())
+		{
+			printf(" Closing tag found and no text was assigned to %s!\n", GetName().c_str());
+			return false;
+		}
+
+		m_text.setPosition(m_position);
+
+		AddDrawable(&m_text);
+
+		// When we have finished assigning the sprite, we can return true!
+		return true;
+	}
+
+	if (context->content == nullptr || OnlyWhitespace(context->content))
+	{
+		return false;
+	}
+
+	if (strcmp("name", context->tag) == 0)
+	{
+		SetName(context->content);
+		return false;
+	}
+
+	if (strcmp("string", context->tag) == 0)
+	{
+		m_text.setString(context->content);
+		return false;
+	}
+
+	if (strcmp("colour", context->tag) == 0)
+	{
+		char* p;
+		const unsigned long n = strtoul(context->content, &p, 16);
+		if (*p != 0)
+		{
+			printf(" ERROR: BAD COLOUR INPUT %s\n", context->content);
+			return false;
+		}
+
+		m_text.setFillColor(static_cast<sf::Color>(n));
+
+		return false;
+	}
+
+	if (strcmp("outline", context->tag) == 0)
+	{
+		// TODO...
+	}
+
+	if (strcmp("size", context->tag) == 0)
+	{
+		m_text.setCharacterSize(TRANSFORMED_SCALAR(std::stol(context->content)));
+		return false;
+	}
+
+	if (strcmp("font", context->tag) == 0)
+	{
+		const sf::Font* font = UIMANAGER.GetFont(context->content);
+		if (!font)
+		{
+			printf(" UiText: Unknown font %s on line %u\n", context->content, context->line);
+			return false;
+		}
+
+		m_text.setFont(*font);
+		return false;
+	}
+
+	return UiElement::ParseEndElement(context);
+}
+
+bool UiText::ParseAttribute(hoxml_context_t*& context)
+{
+	if (strcmp("position", context->tag) == 0)
+	{
+		if (strcmp("x", context->attribute) == 0)
+		{
+			m_position.x = TRANSFORMED_SCALAR(std::stof(context->value));
+			return true;
+		}
+
+		if (strcmp("y", context->attribute) == 0)
+		{
+			m_position.y = TRANSFORMED_SCALAR(std::stof(context->value));
+			return true;
+		}
+
+		printf(" UiText: Unknown parameter in <position/>\n");
+		return false;
+	}
+
+	printf(" UiText: Unknown attribute %s\n", context->attribute);
+
+	return UiElement::ParseAttribute(context);
+}
+
+UiText* UiManager::GetUiText(const std::string& name) const
+{
+	if (m_uiElements.find(name) == m_uiElements.end())
+	{
+		return nullptr;
+	}
+
+	return static_cast<UiText*>(m_uiElements.at(name));
+}
+
+#if !BUILD_MASTER
+void UiManager::DrawDebugText(sf::RenderWindow& window) const
+{
+	for (const auto& text : GetUiText("DEBUG_TEXT")->GetDrawablesList())
+	{
+		window.draw(*text);
+	}
+}
+#endif
+
 UiManager& UiManager::Get()
 {
 	static UiManager* uiManager = nullptr;
@@ -262,10 +420,10 @@ bool UiManager::Load(const std::filesystem::path& path)
 
 	const char* content = text.c_str();
 
-	size_t content_length = strlen(content);
+	const size_t content_length = strlen(content);
 
 	hoxml_context_t* hoxml_context = new hoxml_context_t();
-	auto buffer = static_cast<char*>(malloc(content_length * 2));
+	const auto buffer = static_cast<char*>(malloc(content_length * 2));
 
 	hoxml_init(hoxml_context, buffer, content_length * 2);
 
@@ -278,69 +436,148 @@ bool UiManager::Load(const std::filesystem::path& path)
 #if BUILD_DEBUG
 			printf(" Opened <%s>\n", hoxml_context->tag);
 #endif
-			UiElement* currentElement = nullptr;
 
-			if (strcmp("Sprite", hoxml_context->tag) == 0)
+			if (strcmp("Font", hoxml_context->tag) == 0)
 			{
-				currentElement = new UiSprite();
-			}
-			else if (strcmp("Text", hoxml_context->tag) == 0)
-			{
-				// currentElement = new UiText();
-			}
-			else if (strcmp("Panel", hoxml_context->tag) == 0)
-			{
-				// currentElement = new UiPanel();
+				LoadFont(hoxml_context, content, content_length);
 			}
 			else
 			{
-				// We only care about our specific tags...
-				code = hoxml_parse(hoxml_context, content, content_length);
-				continue;
-			}
-
-			if (currentElement && !currentElement->Load(hoxml_context, content, content_length))
-			{
-				// TODO: Proper cleanup
-				delete currentElement;
-
-				printf(" Error reading xml!");
-				return false;
-			}
-
-			if (m_uiElements.find(currentElement->GetName()) != m_uiElements.end())
-			{
-				delete currentElement;
-
-				printf(" UiManager: UI Element with name %s already exists!\n", currentElement->GetName().c_str());
-				return false;
-			}
-
-			m_uiElements[currentElement->GetName()] = currentElement;
-
-			switch (currentElement->GetLayer()) {
-			case UiElement::eLayer::NONE:
-				// TODO: Proper cleanup
-				delete currentElement;
-
-				printf(" UiManager: No layer set for UiElement %s\n", currentElement->GetName().c_str());
-				return false;
-			case UiElement::eLayer::BACKGROUND:
-				m_backgroundElements.insert(currentElement->GetName());
-				break;
-			case UiElement::eLayer::MIDGROUND:
-				m_midgroundElements.insert(currentElement->GetName());
-				break;
-			case UiElement::eLayer::FOREGROUND:
-				m_foregroundElements.insert(currentElement->GetName());
-				break;
+				LoadElement(hoxml_context, content, content_length);
 			}
 		}
+		if (code == HOXML_ERROR_TAG_MISMATCH)
+		{
+			printf(" UiManager: Start tag did not match end tag on line %u\n", hoxml_context->line);
+			return false;
+		}
+
 		code = hoxml_parse(hoxml_context, content, content_length);
 	}
 
 	free(buffer);
 	return true;
+}
+
+bool UiManager::LoadElement(hoxml_context_t*& context, const char* xml, const size_t xmlLength)
+{
+	UiElement* currentElement = nullptr;
+
+	if (strcmp("Sprite", context->tag) == 0)
+	{
+		currentElement = new UiSprite();
+	}
+	else if (strcmp("Text", context->tag) == 0)
+	{
+		currentElement = new UiText();
+	}
+	else
+	{
+		// We only care about our specific tags...
+		return false;
+	}
+
+	if (!currentElement)
+	{
+		return false;
+	}
+
+	if (!currentElement->Load(context, xml, xmlLength))
+	{
+		// TODO: Proper cleanup
+		delete currentElement;
+
+		printf(" Error reading xml!");
+		return false;
+	}
+
+	if (m_uiElements.find(currentElement->GetName()) != m_uiElements.end())
+	{
+		delete currentElement;
+
+		printf(" UiManager: UI Element with name %s already exists!\n", currentElement->GetName().c_str());
+		return false;
+	}
+
+	m_uiElements[currentElement->GetName()] = currentElement;
+
+	switch (currentElement->GetLayer()) {
+	case UiElement::eLayer::NONE:
+		// TODO: Proper cleanup
+		delete currentElement;
+
+		printf(" UiManager: No layer set for UiElement %s\n", currentElement->GetName().c_str());
+		return false;
+
+	case UiElement::eLayer::BACKGROUND:
+		m_backgroundElements.insert(currentElement->GetName());
+		break;
+	case UiElement::eLayer::MIDGROUND:
+		m_midgroundElements.insert(currentElement->GetName());
+		break;
+	case UiElement::eLayer::FOREGROUND:
+		m_foregroundElements.insert(currentElement->GetName());
+		break;
+	}
+
+	return true;
+}
+
+bool UiManager::LoadFont(hoxml_context_t*& context, const char* xml, const size_t xmlLength)
+{
+	hoxml_code_t code = HOXML_ELEMENT_BEGIN;
+
+	std::string name;
+	std::filesystem::path path;
+
+	do
+	{
+		if (code == HOXML_ELEMENT_END)
+		{
+			if (strcmp("name", context->tag) == 0)
+			{
+				name = context->content;
+			}
+			else if (strcmp("path", context->tag) == 0)
+			{
+				path = context->content;
+			}
+
+			if (strcmp("Font", context->tag) != 0)
+			{
+				code = hoxml_parse(context, xml, xmlLength);
+				continue;
+			}
+
+			if (name.empty())
+			{
+				printf(" UiManager::LoadFont: Trying to load a font with no name tag on line %u.\n", context->line);
+				return false;
+			}
+			if (path.empty())
+			{
+				printf(" UiManager::LoadFont: Trying to load font %s with no path tag on line %u.\n", name.c_str(), context->line);
+				return false;
+			}
+
+			if (m_fonts.find(name) == m_fonts.end())
+			{
+#if BUILD_DEBUG
+				printf(" UiManager::LoadFont: Loading font \"%s\", path=\"%ls\"\n", name.c_str(), path.c_str());
+#endif
+				sf::Font* font = new sf::Font(path);
+
+				m_fonts[name] = font;
+			}
+
+			// Reached the end!
+			return true;
+		}
+
+		code = hoxml_parse(context, xml, xmlLength);
+	} while (code != HOXML_END_OF_DOCUMENT);
+
+	return false;
 }
 
 void UiManager::RenderForeground(sf::RenderWindow& window) const
@@ -374,4 +611,13 @@ void UiManager::RenderBackground(sf::RenderWindow& window) const
 			window.draw(*drawable);
 		}
 	}
+}
+
+const sf::Font* UiManager::GetFont(const std::string& name) const
+{
+	if (m_fonts.find(name) == m_fonts.end())
+	{
+		return nullptr;
+	}
+	return m_fonts.at(name);
 }

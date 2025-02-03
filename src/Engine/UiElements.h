@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <set>
 #include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Text.hpp>
 
 #include "Gameobject.h"
 #include "../Libs/hoxml.h"
@@ -55,6 +56,8 @@ class UiSprite : public UiElement
 public:
 	UiSprite() = default;
 
+	void SetPosition(const sf::Vector2f& position) override;
+
 private:
 	sf::Sprite* m_sprite;
 
@@ -62,6 +65,47 @@ private:
 	bool ParseAttribute(hoxml_context_t*& context) override;
 };
 
+class UiText final : public UiElement
+{
+public:
+	UiText();
+
+	template<typename... Args>
+	void SetText(const char* fmt, Args... args)
+	{
+		char buffer[512]{ 0 };
+
+		if (sprintf_s(buffer, fmt, args...) == -1)
+		{
+			printf(" UiText: Error writing text arguments\n");
+			return;
+		}
+
+		m_string = &buffer[0];
+		m_text.setString(m_string);
+	}
+
+	void SetTextSize(unsigned size);
+
+	void SetPosition(const sf::Vector2f& position) override;
+
+private:
+	std::string m_string;
+	sf::Text m_text;
+
+	bool ParseEndElement(hoxml_context_t*& context) override;
+	bool ParseAttribute(hoxml_context_t*& context) override;
+};
+
+//class UiPanel : public UiElement
+//{
+//public:
+//	bool Load(hoxml_context_t*& context, const char* xml, size_t xml_length) override;
+//
+//private:
+//	UiText m_text;
+//	UiSprite m_sprite;
+//};
 
 class UiManager
 {
@@ -75,13 +119,26 @@ public:
 	void RenderMidground(sf::RenderWindow& window) const;
 	void RenderBackground(sf::RenderWindow& window) const;
 
+	const sf::Font* GetFont(const std::string& name) const;
+
+	UiText* GetUiText(const std::string& name) const;
+
+#if !BUILD_MASTER
+	void DrawDebugText(sf::RenderWindow& window) const;
+#endif
+
 private:
 	UiManager() = default;
+
+	std::unordered_map<std::string, sf::Font*> m_fonts;
 
 	std::unordered_map <std::string, UiElement*> m_uiElements;
 	std::set<std::string> m_backgroundElements;
 	std::set<std::string> m_midgroundElements;
 	std::set<std::string> m_foregroundElements;
+
+	bool LoadElement(hoxml_context_t*& context, const char* xml, size_t xmlLength);
+	bool LoadFont(hoxml_context_t*& context, const char* xml, size_t xmlLength);
 };
 
 #define UIMANAGER UiManager::Get()

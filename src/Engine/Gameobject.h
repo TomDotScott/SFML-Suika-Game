@@ -25,7 +25,7 @@ public:
 
 	const sf::Vector2f& GetPosition() const { return m_position; }
 	sf::Vector2f GetPosition() { return m_position; }
-	void SetPosition(const sf::Vector2f& position);
+	virtual void SetPosition(const sf::Vector2f& position);
 
 	uint64_t GetID() const;
 

@@ -130,9 +130,12 @@ void Game::Render(sf::RenderWindow& window) const
 	for (const auto& fruit : m_fruit)
 	{
 #if !BUILD_MASTER
-		char buffer[512];
-
-		sprintf(buffer,
+		DrawText(window,
+			{
+			fruit.GetPosition().x - fruit.GetRadius(),
+			fruit.GetPosition().y - fruit.GetRadius() - 80.f
+			},
+			10,
 			"%s\n"
 			"ID: %llu\n"
 			"Vel{%.3f,%.3f}\n"
@@ -145,13 +148,6 @@ void Game::Render(sf::RenderWindow& window) const
 			fruit.GetMass(),
 			fruit.GetAcceleration().x, fruit.GetAcceleration().y,
 			fruit.GetPosition().x, fruit.GetPosition().y
-		);
-
-		DrawText(buffer,
-			{
-					 fruit.GetPosition().x - fruit.GetRadius(), fruit.GetPosition().y - fruit.GetRadius() - 80.f
-			},
-			window
 		);
 #endif
 
@@ -169,21 +165,11 @@ void Game::Render(sf::RenderWindow& window) const
 	UIMANAGER.RenderForeground(window);
 
 #if !BUILD_MASTER
-	DrawText(std::to_string(static_cast<int>(Timer::Get().Fps())) + "fps", VECTOR2F_ZERO, window);
-
-	DrawText("Active fruit: " + std::to_string(static_cast<int>(m_fruit.GetInUseCount())), VECTOR2F_ZERO + sf::Vector2f{ 0.f, 100.f }, window);
-	DrawText("Points: " + std::to_string(m_player.GetPoints()), VECTOR2F_ZERO + sf::Vector2f{ 0.f, 200.f }, window);
+	DrawText(window, VECTOR2F_ZERO, 30, "%.1fFPS", Timer::Get().Fps());
+	DrawText(window, VECTOR2F_ZERO + sf::Vector2f{ 0.f, 100.f }, 10, "Active Fruit: %llu", m_fruit.GetInUseCount());
 #endif
-}
 
-void Game::DrawText(const std::string& string, const sf::Vector2f& position, sf::RenderWindow& window)
-{
-	const static sf::Font defaultFont{ "fonts/FiraCode-Regular.ttf" };
-	sf::Text text(defaultFont, string, 10);
-	text.setPosition(position);
-	text.setFillColor(sf::Color::White);
-
-	window.draw(text);
+	UIMANAGER.GetUiText("Score_Number")->SetText(std::to_string(m_player.GetPoints()).c_str());
 }
 
 void Game::DrawFruit(const Fruit& fruit, sf::RenderWindow& window)

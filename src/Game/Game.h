@@ -6,6 +6,7 @@
 #include "Fruit.h"
 #include "Player.h"
 #include "../Engine/ObjectPool.h"
+#include "../Engine/UiElements.h"
 
 class Game
 {
@@ -42,7 +43,19 @@ private:
 	FruitManager::eType m_currentPlayerFruitType;
 	FruitManager::eType m_nextPlayerFruitType;
 
-	static void DrawText(const std::string& string, const sf::Vector2f& position, sf::RenderWindow& window);
+#if !BUILD_MASTER
+	template<typename... Args>
+	static void DrawText(sf::RenderWindow& window, const sf::Vector2f& position, const int size, const char* fmt, Args... args)
+	{
+		auto* debugUi = UIMANAGER.GetUiText("DEBUG_TEXT");
+
+		debugUi->SetPosition(position);
+		debugUi->SetTextSize(size);
+		debugUi->SetText(fmt, args...);
+
+		UIMANAGER.DrawDebugText(window);
+	}
+#endif
 
 	static void DrawFruit(const Fruit& fruit, sf::RenderWindow& window);
 
