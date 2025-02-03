@@ -65,6 +65,11 @@ std::string UiElement::GetName() const
 	return m_name;
 }
 
+const std::vector<const sf::Drawable*>& UiElement::GetDrawablesList() const
+{
+	return m_drawables;
+}
+
 void UiElement::SetName(const std::string& name)
 {
 	m_name = name;
@@ -342,7 +347,7 @@ void UiManager::RenderForeground(sf::RenderWindow& window) const
 {
 	for (const auto& elementName : m_foregroundElements)
 	{
-		for (const auto* drawable : m_uiElements.at(elementName)->m_drawables)
+		for (const auto* drawable : m_uiElements.at(elementName)->GetDrawablesList())
 		{
 			window.draw(*drawable);
 		}
@@ -353,7 +358,7 @@ void UiManager::RenderMidground(sf::RenderWindow& window) const
 {
 	for (const auto& elementName : m_midgroundElements)
 	{
-		for (const auto* drawable : m_uiElements.at(elementName)->m_drawables)
+		for (const auto* drawable : m_uiElements.at(elementName)->GetDrawablesList())
 		{
 			window.draw(*drawable);
 		}
@@ -364,7 +369,7 @@ void UiManager::RenderBackground(sf::RenderWindow& window) const
 {
 	for (const auto& elementName : m_backgroundElements)
 	{
-		for (const auto* drawable : m_uiElements.at(elementName)->m_drawables)
+		for (const auto* drawable : m_uiElements.at(elementName)->GetDrawablesList())
 		{
 			window.draw(*drawable);
 		}

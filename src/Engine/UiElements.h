@@ -9,8 +9,6 @@
 
 class UiElement : public GameObject
 {
-	// TODO: This is a code smell, but I need to figure out what the best way to do this is and this works for now
-	friend class UiManager;
 public:
 	enum class eLayer : std::int8_t
 	{
@@ -30,6 +28,9 @@ public:
 	void SetLayer(eLayer layer);
 
 	std::string GetName() const;
+
+	// TODO: It's getting to the point where a proper renderer class would be nice
+	const std::vector<const sf::Drawable*>& GetDrawablesList() const;
 
 protected:
 	void SetName(const std::string& name);
