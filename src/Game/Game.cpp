@@ -178,6 +178,7 @@ void Game::Render(sf::RenderWindow& window) const
 
 void Game::DrawText(const std::string& string, const sf::Vector2f& position, sf::RenderWindow& window)
 {
+	const static sf::Font defaultFont{ "fonts/FiraCode-Regular.ttf" };
 	sf::Text text(defaultFont, string, 10);
 	text.setPosition(position);
 	text.setFillColor(sf::Color::White);
