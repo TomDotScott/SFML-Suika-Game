@@ -4,7 +4,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "Engine/Globals.h"
-#include "Engine/Keyboard.h"
+#include "Engine/Input/Keyboard.h"
 #include "Engine/Timer.h"
 #include "Game/Game.h"
 
