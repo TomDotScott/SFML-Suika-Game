@@ -1,5 +1,6 @@
 #include "InputMapper.h"
 #include "Keyboard.h"
+#include "Mouse.h"
 
 InputMapper::GameAction::GameAction() :
 	PrimaryInput(eInputType::NONE, UNASSIGNED_BUTTON),
@@ -12,14 +13,15 @@ InputMapper::InputMapper() = default;
 void InputMapper::Update()
 {
 	auto updateInputValue = [](InputValue& inputValue) {
+		inputValue.m_previousValue = inputValue.m_value;
+
 		switch (inputValue.GetType())
 		{
 		case eInputType::Keyboard:
-			inputValue.m_previousValue = inputValue.m_value;
 			inputValue.m_value = Keyboard::Get().IsButtonDown(static_cast<sf::Keyboard::Key>(inputValue.GetButton())) ? 0xFF : 0x00;
 			break;
 		case eInputType::Mouse:
-			// TODO: Implement a wrapper for sf::Mouse like Keyboard.h
+			inputValue.m_value = Mouse::Get().IsButtonDown(static_cast<sf::Mouse::Button>(inputValue.GetButton())) ? 0xFF : 0x00;
 			break;
 		case eInputType::Controller:
 			// TODO: Maybe xInput? The sfml joystick class looks a bit shite

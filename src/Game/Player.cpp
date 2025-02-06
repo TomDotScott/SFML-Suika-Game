@@ -21,6 +21,7 @@ Player::Player() :
 	m_mapper.Map(RIGHT, eInputType::Keyboard, static_cast<int>(sf::Keyboard::Key::Right));
 
 	m_mapper.Map(DROP, eInputType::Keyboard, static_cast<int>(sf::Keyboard::Key::Space));
+	m_mapper.Map(DROP, eInputType::Mouse, static_cast<int>(sf::Mouse::Button::Left));
 }
 
 void Player::Update()
