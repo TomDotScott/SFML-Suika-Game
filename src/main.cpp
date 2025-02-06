@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "Engine/Globals.h"
+#include "Engine/Input/Mouse.h"
 #include "Engine/Input/Keyboard.h"
 #include "Engine/Timer.h"
 #include "Game/Game.h"
@@ -31,6 +32,8 @@ int main(int argc, char** argv)
 
 	window.setFramerateLimit(60);
 
+	Mouse::Get().SetRelativeWindow(&window);
+
 	Game game{};
 
 	while (window.isOpen())
@@ -48,6 +51,7 @@ int main(int argc, char** argv)
 		}
 
 		Keyboard::Get().Update();
+		Mouse::Get().Update();
 
 		Timer::Get().Update();
 
