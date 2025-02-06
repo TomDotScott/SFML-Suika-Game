@@ -1,7 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 #include "../Engine/Gameobject.h"
-#include "../Engine/InputMapper.h"
+#include "../Engine/Input/InputMapper.h"
 
 class Player final : public GameObject, Updatable
 {

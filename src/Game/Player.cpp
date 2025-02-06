@@ -14,6 +14,13 @@ Player::Player() :
 	m_speed = sf::Vector2f(REFERENCE_SCREEN_SIZE.x / 2.f, 0.f);
 
 	// TODO: Make remap UI and Make these readable from a file
+	m_mapper.Map(LEFT, eInputType::Keyboard, static_cast<int>(sf::Keyboard::Key::A));
+	m_mapper.Map(LEFT, eInputType::Keyboard, static_cast<int>(sf::Keyboard::Key::Left));
+
+	m_mapper.Map(RIGHT, eInputType::Keyboard, static_cast<int>(sf::Keyboard::Key::D));
+	m_mapper.Map(RIGHT, eInputType::Keyboard, static_cast<int>(sf::Keyboard::Key::Right));
+
+	m_mapper.Map(DROP, eInputType::Keyboard, static_cast<int>(sf::Keyboard::Key::Space));
 }
 
 void Player::Update()
@@ -39,14 +46,17 @@ unsigned Player::GetPoints() const
 
 bool Player::WantsMoveLeft() const
 {
+	return m_mapper.IsButtonDown(LEFT);
 }
 
 bool Player::WantsMoveRight() const
 {
+	return m_mapper.IsButtonDown(RIGHT);
 }
 
 bool Player::WantsDrop() const
 {
+	return m_mapper.IsButtonReleased(DROP);
 }
 
 void Player::AddPoints(const unsigned amount)
