@@ -33,7 +33,6 @@ private:
 	sf::Text m_text;
 
 	bool ParseEndElement(hoxml_context_t*& context) override;
-	bool ParseAttribute(hoxml_context_t*& context) override;
 };
 
 #endif

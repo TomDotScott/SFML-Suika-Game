@@ -1,4 +1,5 @@
 #include "UiElement.h"
+#include "../Globals.h"
 
 bool UiElement::Load(hoxml_context_t*& context, const char* xml, const size_t xmlLength)
 {
@@ -91,8 +92,32 @@ bool UiElement::ParseAttribute(hoxml_context_t*& context)
 		return false;
 	}
 
+	// Every UiElement has a position
+	if (strcmp("position", context->tag) == 0)
+	{
+		return ParseVectorAttribute(context, m_position);
+	}
+
 #if BUILD_DEBUG
 	printf(" UiElement: Attribute \"%s\" of <%s> has value: %s\n", context->attribute, context->tag, context->value);
 #endif
+	return false;
+}
+
+bool UiElement::ParseVectorAttribute(hoxml_context_t*& context, sf::Vector2f& vector)
+{
+	if (strcmp("x", context->attribute) == 0)
+	{
+		vector.x = TRANSFORMED_SCALAR(std::stof(context->value));
+		return true;
+	}
+
+	if (strcmp("y", context->attribute) == 0)
+	{
+		vector.y = TRANSFORMED_SCALAR(std::stof(context->value));
+		return true;
+	}
+
+	printf(" Sprite: Unknown parameter in <%s/>\n", context->tag);
 	return false;
 }

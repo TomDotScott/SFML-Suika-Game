@@ -33,6 +33,7 @@
     <Sprite>
         <name>ScoreBubble</name>
         <position x="150" y="200"/>
+        <scale x="1.25" y="1.25"/>
         <texture>Sprites/UI/bubble.png</texture>
         <layer>midground</layer>
     </Sprite>

@@ -7,12 +7,13 @@
 class UiSprite : public UiElement
 {
 public:
-	UiSprite() = default;
+	UiSprite();
 
 	void SetPosition(const sf::Vector2f& position) override;
 
 private:
 	sf::Sprite* m_sprite;
+	sf::Vector2f m_scale;
 
 	bool ParseEndElement(hoxml_context_t*& context) override;
 	bool ParseAttribute(hoxml_context_t*& context) override;

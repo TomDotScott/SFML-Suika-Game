@@ -105,29 +105,3 @@ bool UiText::ParseEndElement(hoxml_context_t*& context)
 
 	return UiElement::ParseEndElement(context);
 }
-
-bool UiText::ParseAttribute(hoxml_context_t*& context)
-{
-	if (strcmp("position", context->tag) == 0)
-	{
-		if (strcmp("x", context->attribute) == 0)
-		{
-			m_position.x = TRANSFORMED_SCALAR(std::stof(context->value));
-			return true;
-		}
-
-		if (strcmp("y", context->attribute) == 0)
-		{
-			m_position.y = TRANSFORMED_SCALAR(std::stof(context->value));
-			return true;
-		}
-
-		printf(" UiText: Unknown parameter in <position/>\n");
-		return false;
-	}
-
-	printf(" UiText: Unknown attribute %s\n", context->attribute);
-
-	return UiElement::ParseAttribute(context);
-}
-

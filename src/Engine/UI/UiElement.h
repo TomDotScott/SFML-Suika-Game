@@ -41,6 +41,8 @@ protected:
 
 	virtual bool ParseAttribute(hoxml_context_t*& context);
 
+	static bool ParseVectorAttribute(hoxml_context_t*& context, sf::Vector2f& vector);
+
 private:
 	std::string m_name;
 	eLayer m_layer;

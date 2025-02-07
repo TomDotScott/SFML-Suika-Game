@@ -2,6 +2,13 @@
 #include "../Globals.h"
 #include "../TextureManager.h"
 
+UiSprite::UiSprite() :
+	UiElement(),
+	m_sprite(nullptr),
+	m_scale(1.f, 1.f)
+{
+}
+
 void UiSprite::SetPosition(const sf::Vector2f& position)
 {
 	GameObject::SetPosition(position);
@@ -24,6 +31,8 @@ bool UiSprite::ParseEndElement(hoxml_context_t*& context)
 			return false;
 		}
 		m_sprite->setPosition(m_position);
+
+		m_sprite->setScale(m_scale);
 
 		AddDrawable(m_sprite);
 
@@ -102,25 +111,10 @@ bool UiSprite::ParseEndElement(hoxml_context_t*& context)
 
 bool UiSprite::ParseAttribute(hoxml_context_t*& context)
 {
-	if (strcmp("position", context->tag) == 0)
+	if (strcmp("scale", context->tag) == 0)
 	{
-		if (strcmp("x", context->attribute) == 0)
-		{
-			m_position.x = TRANSFORMED_SCALAR(std::stof(context->value));
-			return true;
-		}
-
-		if (strcmp("y", context->attribute) == 0)
-		{
-			m_position.y = TRANSFORMED_SCALAR(std::stof(context->value));
-			return true;
-		}
-
-		printf(" Sprite: Unknown parameter in <position/>\n");
-		return false;
+		return ParseVectorAttribute(context, m_scale);
 	}
-
-	printf(" Sprite: Unknown attribute %s\n", context->attribute);
 
 	return UiElement::ParseAttribute(context);
 }
