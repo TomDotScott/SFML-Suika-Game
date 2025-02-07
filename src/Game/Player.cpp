@@ -2,6 +2,7 @@
 
 #include "../Engine/Globals.h"
 #include "../Engine/Input/Keyboard.h"
+#include "../Engine/Input/Mouse.h"
 #include "../Engine/Timer.h"
 
 
@@ -29,12 +30,18 @@ void Player::Update()
 	// Update inputs
 	m_mapper.Update();
 
+	// If we've moved the mouse, let's give that priority over the position
+	if (Mouse::Get().GetDelta().lengthSquared() > 0)
+	{
+		// We can set it directly here as the Game class corrects us later on, and we are using the mouse position relative to the window
+		m_position.x = static_cast<float>(Mouse::Get().GetPosition().x);
+	}
 
-	if (WantsMoveLeft())
+	if (m_mapper.IsButtonDown(LEFT))
 	{
 		m_position -= TRANSFORMED_VECTOR(m_speed) * Timer::Get().DeltaTime();
 	}
-	else if (WantsMoveRight())
+	else if (m_mapper.IsButtonDown(RIGHT))
 	{
 		m_position += TRANSFORMED_VECTOR(m_speed) * Timer::Get().DeltaTime();
 	}
@@ -43,16 +50,6 @@ void Player::Update()
 unsigned Player::GetPoints() const
 {
 	return m_points;
-}
-
-bool Player::WantsMoveLeft() const
-{
-	return m_mapper.IsButtonDown(LEFT);
-}
-
-bool Player::WantsMoveRight() const
-{
-	return m_mapper.IsButtonDown(RIGHT);
 }
 
 bool Player::WantsDrop() const

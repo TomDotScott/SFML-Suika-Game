@@ -14,8 +14,6 @@ public:
 
 	unsigned GetPoints() const;
 
-	bool WantsMoveLeft() const;
-	bool WantsMoveRight() const;
 	bool WantsDrop() const;
 
 private:
