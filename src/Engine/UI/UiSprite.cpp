@@ -45,12 +45,6 @@ bool UiSprite::ParseEndElement(hoxml_context_t*& context)
 		return false;
 	}
 
-	if (strcmp("name", context->tag) == 0)
-	{
-		SetName(context->content);
-		return false;
-	}
-
 	if (strcmp("layer", context->tag) == 0)
 	{
 		if (strcmp("foreground", context->content) == 0)

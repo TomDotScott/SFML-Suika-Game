@@ -49,11 +49,6 @@ const std::vector<const sf::Drawable*>& UiElement::GetDrawablesList() const
 	return m_drawables;
 }
 
-void UiElement::SetName(const std::string& name)
-{
-	m_name = name;
-}
-
 void UiElement::AddDrawable(const sf::Drawable* drawable)
 {
 	m_drawables.emplace_back(drawable);
@@ -76,6 +71,13 @@ bool UiElement::ParseEndElement(hoxml_context_t*& context)
 {
 	if (!context)
 	{
+		return false;
+	}
+
+	// Every UiElement has a name
+	if (strcmp("name", context->tag) == 0)
+	{
+		m_name = context->content;
 		return false;
 	}
 

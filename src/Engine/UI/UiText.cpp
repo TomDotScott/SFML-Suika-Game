@@ -51,12 +51,6 @@ bool UiText::ParseEndElement(hoxml_context_t*& context)
 		return false;
 	}
 
-	if (strcmp("name", context->tag) == 0)
-	{
-		SetName(context->content);
-		return false;
-	}
-
 	if (strcmp("string", context->tag) == 0)
 	{
 		m_text.setString(context->content);

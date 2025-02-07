@@ -30,12 +30,11 @@ public:
 	const std::vector<const sf::Drawable*>& GetDrawablesList() const;
 
 protected:
-	void SetName(const std::string& name);
 	void AddDrawable(const sf::Drawable* drawable);
 
 	virtual bool ParseBeginElement(hoxml_context_t*& context);
 
-	// We return true when the element we're loading has it a closing tag with its name
+	// We return true when the element we're loading has hit a closing tag with its name
 	// so, for <sprite>, it returns true on </sprite>
 	virtual bool ParseEndElement(hoxml_context_t*& context);
 
