@@ -1,6 +1,5 @@
 #include "Game.h"
 #include <fstream>
-#include <iostream>
 #include <set>
 #include <SFML/Graphics.hpp>
 
@@ -25,13 +24,20 @@ Game::Game() :
 	m_currentPlayerFruitType(FRUIT_MANAGER->GenerateRandomType()),
 	m_nextPlayerFruitType(FRUIT_MANAGER->GenerateRandomType())
 {
+	UIMANAGER.Load("ui.xml");
+
 	m_player.SetPosition({
 		static_cast<float>(GRAPHIC_SETTINGS.GetScreenDetails().m_ScreenCentre.x),
 		FRUIT_MANAGER->GetFruitDetails(FruitManager::eType::FRUIT_TYPE_Apple).m_Radius + 20.f
 		}
 	);
 
-	UIMANAGER.Load("ui.xml");
+	// TODO: This is a bit stinky! I think it would probably be better to make this be another texture
+	const sf::Vector2f boxSize = { TRANSFORMED_SCALAR(5.f), TRANSFORMED_SCALAR(static_cast<float>(TEXTUREMANAGER.GetTexture("Box")->getSize().y)) };
+
+	m_playerGuideLine.setSize(boxSize);
+	m_playerGuideLine.setFillColor(static_cast<sf::Color>(0xFFFFFF40));
+	m_playerGuideLine.setOrigin({ m_playerGuideLine.getLocalBounds().size.x / 2.f, 0.f });
 }
 
 Game::~Game()
@@ -69,6 +75,8 @@ void Game::Update()
 				}
 			);
 		}
+
+		m_playerGuideLine.setPosition(m_player.GetPosition());
 	}
 
 	static float timer = 0.f;
@@ -127,6 +135,8 @@ void Game::Render(sf::RenderWindow& window) const
 	UIMANAGER.RenderMidground(window);
 
 	// Then the game elements
+	window.draw(m_playerGuideLine);
+
 	for (const auto& fruit : m_fruit)
 	{
 #if !BUILD_MASTER

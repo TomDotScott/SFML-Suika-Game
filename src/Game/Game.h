@@ -1,7 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 #include <set>
-#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
 
 #include "Fruit.h"
 #include "Player.h"
@@ -39,6 +39,7 @@ private:
 
 	ObjectPool<Fruit, 100> m_fruit;
 	Player m_player;
+	sf::RectangleShape m_playerGuideLine;
 
 	FruitManager::eType m_currentPlayerFruitType;
 	FruitManager::eType m_nextPlayerFruitType;
