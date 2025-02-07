@@ -8,7 +8,6 @@
 #include "../Engine/TextureManager.h"
 #include "../Engine/Globals.h"
 #include "../Engine/Timer.h"
-#include "../Engine/UiElements.h"
 #include "../Libs/hoxml.h"
 
 float Game::Boundary::m_Damping = 0.8f;

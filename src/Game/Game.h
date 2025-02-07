@@ -5,8 +5,8 @@
 
 #include "Fruit.h"
 #include "Player.h"
+#include "../Engine/UI/UiManager.h"
 #include "../Engine/ObjectPool.h"
-#include "../Engine/UiElements.h"
 
 class Game
 {

@@ -3,6 +3,11 @@
 #include <random>
 #include <SFML/System/Vector2.hpp>
 
+namespace sf
+{
+	class Font;
+}
+
 class GraphicSettings
 {
 public:
@@ -34,11 +39,16 @@ private:
 	std::default_random_engine m_randomEngine;
 };
 
+extern bool OnlyWhitespace(const char* chr);
+
 #define VECTOR2F_ZERO sf::Vector2f(0.f, 0.f)
 #define VECTOR2F_LEFT sf::Vector2f(-1.f, 0.f)
 #define VECTOR2F_RIGHT sf::Vector2f(1.f, 0.f)
 #define VECTOR2F_UP sf::Vector2f(0.f, -1.f)
 #define VECTOR2F_DOWN sf::Vector2f(0.f, 1.f)
+
+// I don't like how this is needed for sf::Text to compile
+extern sf::Font DEFAULT_FONT;
 
 constexpr static sf::Vector2u REFERENCE_SCREEN_SIZE{ 1280, 720 };
 extern GraphicSettings GRAPHIC_SETTINGS;
