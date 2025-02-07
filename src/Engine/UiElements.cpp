@@ -196,7 +196,7 @@ bool UiSprite::ParseEndElement(hoxml_context_t*& context)
 			return false;
 		}
 
-		const std::string textureName = filePath.filename().string();
+		const std::string textureName = filePath.stem().string();
 
 		// Load the texture into the TextureManager
 		if (!TEXTUREMANAGER.LoadTexture(textureName, filePath))

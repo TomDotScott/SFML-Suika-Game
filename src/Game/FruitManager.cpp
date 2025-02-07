@@ -117,7 +117,7 @@ bool FruitManager::Init()
 							return false;
 						}
 
-						std::string textureName = filePath.filename().string();
+						std::string textureName = filePath.stem().string();
 
 						// Load the texture into the TextureManager
 						if (!TextureManager::Get().LoadTexture(textureName, filePath))
