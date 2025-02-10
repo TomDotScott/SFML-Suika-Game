@@ -5,7 +5,8 @@
 UiSprite::UiSprite() :
 	UiElement(),
 	m_sprite(nullptr),
-	m_scale(1.f, 1.f)
+	m_screenScaleFactor(1.f, 1.f),
+	m_scaleFactorFromXml(1.f, 1.f)
 {
 }
 
@@ -14,6 +15,12 @@ void UiSprite::SetPosition(const sf::Vector2f& position)
 	GameObject::SetPosition(position);
 
 	m_sprite->setPosition(m_position);
+}
+
+void UiSprite::SetScale(const sf::Vector2f& scale) const
+{
+	const sf::Vector2f overallScale{ m_screenScaleFactor.x * scale.y, m_screenScaleFactor.x * scale.y };
+	m_sprite->setScale(overallScale);
 }
 
 bool UiSprite::ParseEndElement(hoxml_context_t*& context)
@@ -32,7 +39,7 @@ bool UiSprite::ParseEndElement(hoxml_context_t*& context)
 		}
 		m_sprite->setPosition(m_position);
 
-		m_sprite->setScale(m_scale);
+		SetScale(m_scaleFactorFromXml);
 
 		AddDrawable(m_sprite);
 
@@ -94,8 +101,9 @@ bool UiSprite::ParseEndElement(hoxml_context_t*& context)
 			static_cast<float>(texture->getSize().y) / TRANSFORMED_SCALAR(texture->getSize().y)
 		};
 
+		m_screenScaleFactor = { 1.f / scaleFactor.x, 1.f / scaleFactor.y };
+
 		m_sprite = new sf::Sprite(*texture);
-		m_sprite->setScale({ 1.f / scaleFactor.x, 1.f / scaleFactor.y });
 
 		return false;
 	}
@@ -107,7 +115,7 @@ bool UiSprite::ParseAttribute(hoxml_context_t*& context)
 {
 	if (strcmp("scale", context->tag) == 0)
 	{
-		return ParseVectorAttribute(context, m_scale);
+		return ParseVectorAttribute(context, m_scaleFactorFromXml);
 	}
 
 	return UiElement::ParseAttribute(context);
