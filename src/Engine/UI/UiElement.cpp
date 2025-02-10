@@ -1,6 +1,12 @@
 #include "UiElement.h"
 #include "../Globals.h"
 
+UiElement::UiElement() :
+	m_layer(eLayer::NONE)
+{
+	m_drawables.reserve(10);
+}
+
 bool UiElement::Load(hoxml_context_t*& context, const char* xml, const size_t xmlLength)
 {
 	// We have come from UiManager::Load so let's assume that we are on a HOXML_ELEMENT_BEGIN at the moment

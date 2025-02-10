@@ -2,17 +2,35 @@
 
 #include <fstream>
 
+#include "UiPanel.h"
 #include "UiSprite.h"
 
-UiText* UiManager::GetUiText(const std::string& name) const
+UiElement* UiManager::GetUiElement(const std::string& name) const
 {
 	if (m_uiElements.find(name) == m_uiElements.end())
 	{
 		return nullptr;
 	}
 
-	return static_cast<UiText*>(m_uiElements.at(name));
+	return m_uiElements.at(name);
 }
+
+UiPanel* UiManager::GetUiPanel(const std::string& name) const
+{
+	return static_cast<UiPanel*>(GetUiElement(name));
+}
+
+UiText* UiManager::GetUiText(const std::string& name) const
+{
+	return static_cast<UiText*>(GetUiElement(name));
+}
+
+UiSprite* UiManager::GetUiSprite(const std::string& name) const
+{
+	return static_cast<UiSprite*>(GetUiElement(name));
+}
+
+
 
 #if !BUILD_MASTER
 void UiManager::DrawDebugText(sf::RenderWindow& window) const
@@ -23,6 +41,11 @@ void UiManager::DrawDebugText(sf::RenderWindow& window) const
 	}
 }
 #endif
+
+UiManager::LastXmlDetails UiManager::GetLastXmlDetails() const
+{
+	return m_lastXmlDetails;
+}
 
 UiManager& UiManager::Get()
 {
@@ -57,6 +80,8 @@ bool UiManager::Load(const std::filesystem::path& path)
 	const auto buffer = static_cast<char*>(malloc(content_length * 2));
 
 	hoxml_init(hoxml_context, buffer, content_length * 2);
+
+	m_lastXmlDetails = { content, content_length };
 
 	// Loop until the "end of document" code is returned
 	hoxml_code_t code = hoxml_parse(hoxml_context, content, content_length);
@@ -94,7 +119,11 @@ bool UiManager::LoadElement(hoxml_context_t*& context, const char* xml, const si
 {
 	UiElement* currentElement = nullptr;
 
-	if (strcmp("Sprite", context->tag) == 0)
+	if (strcmp("Panel", context->tag) == 0)
+	{
+		currentElement = new UiPanel();
+	}
+	else if (strcmp("Sprite", context->tag) == 0)
 	{
 		currentElement = new UiSprite();
 	}
@@ -252,3 +281,5 @@ const sf::Font* UiManager::GetFont(const std::string& name) const
 	}
 	return m_fonts.at(name);
 }
+
+

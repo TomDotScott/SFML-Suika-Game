@@ -15,7 +15,7 @@ public:
 		FOREGROUND
 	};
 
-	UiElement() = default;
+	UiElement();
 
 	// Exposing Load to callers and inheritors, but this will be the basis for all the UI Elements load from XML using the hoxml
 	// library. There are protected Parse functions that will be privated/protected in the children of the UiElement class.

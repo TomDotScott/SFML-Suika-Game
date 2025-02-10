@@ -113,6 +113,8 @@ void Game::Update()
 	{
 		HandleCollisions();
 	}
+
+	UIMANAGER.GetUiPanel("ScoreBubble_Panel")->GetUiText("ScoreBubble_Score")->SetText(std::to_string(m_player.GetPoints()).c_str());
 }
 
 void Game::Render(sf::RenderWindow& window) const
@@ -177,8 +179,6 @@ void Game::Render(sf::RenderWindow& window) const
 	DrawText(window, VECTOR2F_ZERO, 30, "%.1fFPS", Timer::Get().Fps());
 	DrawText(window, VECTOR2F_ZERO + sf::Vector2f{ 0.f, 100.f }, 10, "Active Fruit: %llu", m_fruit.GetInUseCount());
 #endif
-
-	UIMANAGER.GetUiText("Score_Number")->SetText(std::to_string(m_player.GetPoints()).c_str());
 }
 
 void Game::DrawFruit(const Fruit& fruit, sf::RenderWindow& window)

@@ -48,13 +48,14 @@ private:
 	template<typename... Args>
 	static void DrawText(sf::RenderWindow& window, const sf::Vector2f& position, const int size, const char* fmt, Args... args)
 	{
-		auto* debugUi = UIMANAGER.GetUiText("DEBUG_TEXT");
+		if (auto* debugUi = UIMANAGER.GetUiText("DEBUG_TEXT"))
+		{
+			debugUi->SetPosition(position);
+			debugUi->SetTextSize(size);
+			debugUi->SetText(fmt, args...);
 
-		debugUi->SetPosition(position);
-		debugUi->SetTextSize(size);
-		debugUi->SetText(fmt, args...);
-
-		UIMANAGER.DrawDebugText(window);
+			UIMANAGER.DrawDebugText(window);
+		}
 	}
 #endif
 

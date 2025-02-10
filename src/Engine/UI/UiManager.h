@@ -5,6 +5,7 @@
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 
+#include "UiPanel.h"
 #include "UiText.h"
 #include "../../Libs/hoxml.h"
 
@@ -22,11 +23,23 @@ public:
 
 	const sf::Font* GetFont(const std::string& name) const;
 
+	UiElement* GetUiElement(const std::string& name) const;
+	UiPanel* GetUiPanel(const std::string& name) const;
 	UiText* GetUiText(const std::string& name) const;
+	UiSprite* GetUiSprite(const std::string& name) const;
 
 #if !BUILD_MASTER
 	void DrawDebugText(sf::RenderWindow& window) const;
 #endif
+
+	struct LastXmlDetails
+	{
+		// This pointer CAN be null
+		const char* text;
+		size_t length;
+	};
+
+	LastXmlDetails GetLastXmlDetails() const;
 
 private:
 	UiManager() = default;
@@ -37,6 +50,8 @@ private:
 	std::set<std::string> m_backgroundElements;
 	std::set<std::string> m_midgroundElements;
 	std::set<std::string> m_foregroundElements;
+
+	LastXmlDetails m_lastXmlDetails;
 
 	bool LoadElement(hoxml_context_t*& context, const char* xml, size_t xmlLength);
 	bool LoadFont(hoxml_context_t*& context, const char* xml, size_t xmlLength);
