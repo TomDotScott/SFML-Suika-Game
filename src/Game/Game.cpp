@@ -345,7 +345,11 @@ bool Game::CircleCircleCollision(Fruit& fruit, Fruit& otherFruit)
 	// Impulse scalar
 	float j = -(1.f + coefficientOfRestitution) * velocityAlongNormal;
 
-	j /= 1.f / fruit.GetMass() + 1.f / otherFruit.GetMass();
+	const float fruitInverseMass = 1.f / fruit.GetMass();
+	const float otherFruitInverseMass = 1.f / otherFruit.GetMass();
+	const float totalInverseMass = fruitInverseMass + otherFruitInverseMass;
+
+	j /= totalInverseMass;
 
 	const sf::Vector2f impulse = j * collisionNormal;
 
@@ -355,11 +359,14 @@ bool Game::CircleCircleCollision(Fruit& fruit, Fruit& otherFruit)
 	// Positional correction
 	const float penetrationDepth = sumRadii - distanceBetweenFruit;
 
-	// Adjust positions to resolve overlap
+	// Adjust positions to resolve overlap, taking mass into account.
+	const float fruitCorrectionFactor = fruitInverseMass / totalInverseMass;
+	const float otherFruitCorrectionFactor = otherFruitInverseMass / totalInverseMass;
+
 	const sf::Vector2f correction = collisionNormal * penetrationDepth;
 
-	fruit.SetPosition(fruit.GetPosition() + correction);
-	otherFruit.SetPosition(otherFruit.GetPosition() - correction);
+	fruit.SetPosition(fruit.GetPosition() + correction * fruitCorrectionFactor);
+	otherFruit.SetPosition(otherFruit.GetPosition() - correction * otherFruitCorrectionFactor);
 
 	return true;
 }
