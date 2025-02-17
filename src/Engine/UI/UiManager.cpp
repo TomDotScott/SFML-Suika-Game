@@ -240,37 +240,32 @@ bool UiManager::LoadFont(hoxml_context_t*& context, const char* xml, const size_
 	return false;
 }
 
-void UiManager::RenderForeground(sf::RenderWindow& window) const
+void UiManager::RenderLayer(sf::RenderWindow& window, const std::set<std::string>& layerUIElementIDs) const
 {
-	for (const auto& elementName : m_foregroundElements)
+#if RENDER_SPRITES
+	for (const auto& elementName : layerUIElementIDs)
 	{
 		for (const auto* drawable : m_uiElements.at(elementName)->GetDrawablesList())
 		{
 			window.draw(*drawable);
 		}
 	}
+#endif
+}
+
+void UiManager::RenderForeground(sf::RenderWindow& window) const
+{
+	RenderLayer(window, m_foregroundElements);
 }
 
 void UiManager::RenderMidground(sf::RenderWindow& window) const
 {
-	for (const auto& elementName : m_midgroundElements)
-	{
-		for (const auto* drawable : m_uiElements.at(elementName)->GetDrawablesList())
-		{
-			window.draw(*drawable);
-		}
-	}
+	RenderLayer(window, m_midgroundElements);
 }
 
 void UiManager::RenderBackground(sf::RenderWindow& window) const
 {
-	for (const auto& elementName : m_backgroundElements)
-	{
-		for (const auto* drawable : m_uiElements.at(elementName)->GetDrawablesList())
-		{
-			window.draw(*drawable);
-		}
-	}
+	RenderLayer(window, m_backgroundElements);
 }
 
 const sf::Font* UiManager::GetFont(const std::string& name) const

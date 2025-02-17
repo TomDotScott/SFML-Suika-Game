@@ -55,6 +55,7 @@ private:
 
 	bool LoadElement(hoxml_context_t*& context, const char* xml, size_t xmlLength);
 	bool LoadFont(hoxml_context_t*& context, const char* xml, size_t xmlLength);
+	void RenderLayer(sf::RenderWindow& window, const std::set<std::string>& layerUIElementIDs) const;
 };
 
 #define UIMANAGER UiManager::Get()

@@ -204,7 +204,9 @@ void Game::DrawFruit(const Fruit& fruit, sf::RenderWindow& window)
 	window.draw(circle);
 #endif
 
+#if RENDER_SPRITES
 	window.draw(sprite);
+#endif
 }
 
 void Game::HandleCollisions()
